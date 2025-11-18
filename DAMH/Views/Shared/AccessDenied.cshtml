@@ -1,0 +1,21 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Từ chối truy cập";
+}
+
+<div class="container mt-5 text-center">
+    <div class="card border-danger shadow mx-auto" style="max-width: 600px;">
+        <div class="card-header bg-danger text-white">
+            <h3><i class="bi bi-shield-lock-fill"></i> Truy cập bị từ chối</h3>
+        </div>
+        <div class="card-body p-5">
+            <h4 class="card-title text-danger mb-4">Bạn không có quyền xem nội dung này</h4>
+            <p class="card-text lead">@Model</p>
+            <div class="alert alert-warning">
+                Nội dung này chỉ dành cho thành viên <strong>VIP</strong>.
+            </div>
+            <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-primary btn-lg mt-3">Nâng cấp tài khoản</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg mt-3">Về trang chủ</a>
+        </div>
+    </div>
+</div>

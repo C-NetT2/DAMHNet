@@ -1,0 +1,79 @@
+﻿@model IEnumerable<DAMH.Models.Book>
+
+@{
+    ViewData["Title"] = "Thư viện Online";
+}
+
+<div class="container mt-4">
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h1 class="display-4 fw-bold">Chào mừng đến với Thư viện</h1>
+        <p class="lead">Khám phá hàng ngàn cuốn sách hấp dẫn ngay hôm nay.</p>
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <hr class="my-4" style="border-color: white;">
+            <p>Đăng ký ngay để đọc các nội dung VIP!</p>
+            <a class="btn btn-light btn-lg text-primary fw-bold" asp-area="Identity" asp-page="/Account/Register" role="button">Đăng ký ngay</a>
+        }
+    </div>
+
+    <h2 class="mb-4 border-bottom pb-2"><i class="bi bi-journal-bookmark-fill"></i> Danh sách sách</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var book in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-transparent border-0 pt-3">
+                            @if (book.AccessLevel == DAMH.Models.AccessLevel.Free)
+                            {
+                                <span class="badge bg-success float-end">Miễn phí</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark float-end">VIP</span>
+                            }
+                            <h5 class="card-title fw-bold text-primary">@book.Title</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted">@(book.Description ?? "Chưa có mô tả")</p>
+
+                            @if (book.Chapters != null && book.Chapters.Any())
+                            {
+                                <h6 class="mt-3 text-secondary"><small>Mục lục:</small></h6>
+                                <ul class="list-group list-group-flush list-group-numbered">
+                                    @foreach (var chapter in book.Chapters.OrderBy(c => c.ChapterOrder))
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-start px-0">
+                                            <div class="ms-2 me-auto">
+                                                <a asp-controller="Reading" asp-action="ViewChapter" asp-route-chapterId="@chapter.ChapterId" class="text-decoration-none fw-bold text-dark">
+                                                    @chapter.Title
+                                                </a>
+                                            </div>
+                                            @if (!chapter.IsFree)
+                                            {
+                                                <span class="badge bg-secondary rounded-pill"><i class="bi bi-lock-fill"></i></span>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <small class="text-muted fst-italic">Chưa có chương nào.</small>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pb-3">
+                            <small class="text-muted">@book.Chapters?.Count chương</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Hiện chưa có cuốn sách nào.</div>
+    }
+</div>

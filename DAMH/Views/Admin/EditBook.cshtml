@@ -1,0 +1,38 @@
+﻿@model DAMH.Models.Book
+@{
+    ViewData["Title"] = "Sửa sách";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Chỉnh sửa thông tin sách</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditBook">
+                        <input type="hidden" asp-for="BookId" />
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-bold">Tên sách</label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="AccessLevel" class="form-label fw-bold">Loại sách</label>
+                            <select asp-for="AccessLevel" class="form-select" asp-items="Html.GetEnumSelectList<DAMH.Models.AccessLevel>()"></select>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">Quay lại</a>
+                            <button type="submit" class="btn btn-warning">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

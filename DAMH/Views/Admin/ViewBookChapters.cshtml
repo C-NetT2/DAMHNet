@@ -1,0 +1,68 @@
+﻿@model DAMH.Models.Book
+@{
+    ViewData["Title"] = "Danh sách chương";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <div>
+                <h2 class="mb-0 text-primary">@Model.Title</h2>
+                <span class="text-muted">Quản lý các chương</span>
+            </div>
+            <div>
+                <a asp-action="AddChapter" asp-route-bookId="@Model.BookId" class="btn btn-success">
+                    <i class="bi bi-plus-lg"></i> Thêm chương mới
+                </a>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Chapters != null && Model.Chapters.Any())
+            {
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 10%">STT</th>
+                            <th style="width: 50%">Tên chương</th>
+                            <th style="width: 20%">Trạng thái</th>
+                            <th style="width: 20%">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var chapter in Model.Chapters.OrderBy(c => c.ChapterOrder))
+                        {
+                            <tr>
+                                <td>#@chapter.ChapterOrder</td>
+                                <td class="fw-bold">@chapter.Title</td>
+                                <td>
+                                    @if (chapter.IsFree)
+                                    {
+                                        <span class="badge bg-success">Miễn phí</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="badge bg-secondary">Khóa (Theo sách)</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-controller="Reading" asp-action="ViewChapter" asp-route-chapterId="@chapter.ChapterId" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Xem
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-journal-x" style="font-size: 2rem;"></i>
+                    <p class="mt-2">Sách này chưa có chương nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

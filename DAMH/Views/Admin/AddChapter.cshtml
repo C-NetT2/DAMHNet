@@ -1,0 +1,45 @@
+﻿@model DAMH.Models.Chapter
+@{
+    ViewData["Title"] = "Thêm chương mới";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">Thêm chương mới cho: @ViewBag.BookTitle</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="AddChapter">
+                <input type="hidden" asp-for="BookId" value="@ViewBag.BookId" />
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label asp-for="Title" class="form-label fw-bold">Tên chương</label>
+                        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Chương 1 - Mở đầu" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="ChapterOrder" class="form-label fw-bold">Số thứ tự</label>
+                        <input asp-for="ChapterOrder" class="form-control" type="number" min="1" value="1" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Content" class="form-label fw-bold">Nội dung chương</label>
+                    <textarea asp-for="Content" class="form-control" rows="10" placeholder="Nhập nội dung truyện tại đây... (Hỗ trợ HTML cơ bản)"></textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" asp-for="IsFree" id="isFreeCheck">
+                    <label class="form-check-label" for="isFreeCheck">Chương này miễn phí (Ngay cả khi sách là VIP)</label>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a asp-action="ViewBookChapters" asp-route-bookId="@ViewBag.BookId" class="btn btn-secondary me-md-2">Hủy</a>
+                    <button type="submit" class="btn btn-success">Lưu chương</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
