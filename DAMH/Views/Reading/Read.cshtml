@@ -13,17 +13,21 @@
     </nav>
 
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             <div class="card shadow-lg border-0">
                 <div class="card-body p-5">
-                    <h1 class="text-center mb-4">@Model.Title</h1>
+                    <h1 class="text-center mb-3 text-primary">@Model.Title</h1>
+                    <p class="text-center text-muted mb-4">
+                        <small>Thuộc sách: <strong>@Model.Book.Title</strong></small>
+                    </p>
                     <hr />
-                    <div class="chapter-content mt-4" style="font-size: 1.2rem; line-height: 1.8; text-align: justify;">
+
+                    <div class="chapter-content mt-4" style="font-size: 1.3rem; line-height: 1.8; text-align: justify; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                         @Html.Raw(Model.Content)
                     </div>
                 </div>
-                <div class="card-footer text-center py-4">
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+                <div class="card-footer text-center py-4 bg-white border-top-0">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary rounded-pill px-4">
                         <i class="bi bi-arrow-left"></i> Quay lại danh sách
                     </a>
                 </div>
