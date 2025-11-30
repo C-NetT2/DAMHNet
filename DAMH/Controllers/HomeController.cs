@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using DAMH.Data;
+﻿using DAMH.Data;
 using DAMH.Models;
 using DAMH.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DAMH.Controllers
 {
@@ -85,7 +86,25 @@ namespace DAMH.Controllers
             ViewBag.SearchModel = model;
             return View(resultBooks);
         }
+        // === 4. LỊCH SỬ XEM (HISTORY) - ĐÃ SỬA LỖI LINQ ===
+        [Authorize]
+        public async Task<IActionResult> History()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var rawHistory = await _context.ReadingHistories
+                .Where(rh => rh.UserId == userId)
+                .Include(rh => rh.Book)
+                .Include(rh => rh.Chapter)
+                .OrderByDescending(rh => rh.AccessTime)
+                .ToListAsync(); 
 
+            var uniqueHistory = rawHistory
+                .GroupBy(rh => rh.BookId) 
+                .Select(g => g.First())  
+                .ToList();
+
+            return View(uniqueHistory);
+        }
         public async Task<IActionResult> Details(int id)
         {
             var book = await _context.Books

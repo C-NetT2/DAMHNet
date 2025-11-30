@@ -1,0 +1,38 @@
+﻿@model IEnumerable<DAMH.Models.Review>
+@{
+    ViewData["Title"] = "Quản lý Đánh giá";
+    Layout = "_AdminLayout";
+}
+
+<h2 class="mb-4">Quản Lý Đánh Giá & Bình Luận</h2>
+
+<table class="table table-bordered table-hover bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>Người dùng</th>
+            <th>Sách</th>
+            <th>Sao</th>
+            <th>Bình luận</th>
+            <th>Ngày</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.User.Email</td>
+                <td>@item.Book.Title</td>
+                <td><span class="text-warning fw-bold">@item.Rating</span></td>
+                <td>@item.Comment</td>
+                <td>@item.CreatedDate.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <a asp-action="EditReview" asp-route-id="@item.ReviewId" class="btn btn-sm btn-warning">Sửa</a>
+                    <form asp-action="DeleteReview" asp-route-id="@item.ReviewId" method="post" class="d-inline" onsubmit="return confirm('Xóa đánh giá này?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

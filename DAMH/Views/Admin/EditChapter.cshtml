@@ -1,33 +1,30 @@
 ﻿@model DAMH.Models.Chapter
 
 @{
-    ViewData["Title"] = "Thêm chương mới";
+    ViewData["Title"] = "Sửa chương";
     Layout = "_AdminLayout";
-    var bookTitle = ViewBag.BookTitle ?? "Sách";
 }
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card shadow">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                     <h3 class="mb-0">
-                        <i class="bi bi-plus-circle"></i> Thêm chương mới
+                        <i class="bi bi-pencil-square"></i> Chỉnh Sửa Chương
                     </h3>
-                    <p class="mb-0 mt-1">
-                        <small>Đang thêm cho sách: <strong>@bookTitle</strong></small>
-                    </p>
                 </div>
                 <div class="card-body">
-                    <form asp-action="AddChapter" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <form asp-action="EditChapter">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
+                        <input type="hidden" asp-for="ChapterId" />
                         <input type="hidden" asp-for="BookId" />
 
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label asp-for="Title" class="form-label fw-bold">Tên chương <span class="text-danger">*</span></label>
-                                <input asp-for="Title" class="form-control" placeholder="Ví dụ: Chương 1 - Mở đầu" />
+                                <input asp-for="Title" class="form-control" />
                                 <span asp-validation-for="Title" class="text-danger"></span>
                             </div>
 
@@ -41,38 +38,33 @@
                         <div class="mb-3">
                             <label asp-for="Content" class="form-label fw-bold">Nội dung chương <span class="text-danger">*</span></label>
 
-                            <div class="mb-2 p-2 bg-light border rounded d-flex gap-2 align-items-center">
+                            <div class="mb-2 p-2 bg-light border rounded d-flex gap-2">
                                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('mediaInput').click()">
-                                    <i class="bi bi-cloud-upload"></i> Thêm Ảnh / Video
+                                    <i class="bi bi-image"></i> Thêm Ảnh / Video
                                 </button>
-                                <small class="text-muted fst-italic ms-2">
-                                    (File sẽ tự động chèn vào cuối nội dung)
+                                <small class="text-muted align-self-center fst-italic ms-2">
+                                    (Hỗ trợ: jpg, png, mp4. Tự động chèn vào cuối nội dung)
                                 </small>
                                 <input type="file" id="mediaInput" style="display: none;" accept="image/*,video/*" onchange="uploadMedia()">
                             </div>
 
-                            <textarea asp-for="Content" id="chapterContent" class="form-control" rows="15" placeholder="Nhập nội dung truyện tại đây..."></textarea>
+                            <textarea asp-for="Content" id="chapterContent" class="form-control" rows="15"></textarea>
                             <span asp-validation-for="Content" class="text-danger"></span>
                         </div>
 
                         <div class="mb-4">
                             <div class="form-check form-switch p-3 border rounded bg-light">
                                 <input class="form-check-input" type="checkbox" asp-for="IsFree" id="isFreeCheck" />
-                                <label class="form-check-label fw-bold" for="isFreeCheck">
-                                    Chương miễn phí
-                                </label>
-                                <div class="form-text text-muted">
-                                    Nếu bật: Ai cũng đọc được. Nếu tắt: Chỉ VIP mới đọc được (nếu sách là VIP).
-                                </div>
+                                <label class="form-check-label fw-bold" for="isFreeCheck">Chương miễn phí</label>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <div class="d-flex justify-content-between mt-4">
                             <a asp-action="ViewBookChapters" asp-route-bookId="@Model.BookId" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                                <i class="bi bi-arrow-left"></i> Quay lại
                             </a>
-                            <button type="submit" class="btn btn-success btn-lg px-5">
-                                <i class="bi bi-save"></i> Lưu Chương
+                            <button type="submit" class="btn btn-warning px-5">
+                                <i class="bi bi-save"></i> Lưu Thay Đổi
                             </button>
                         </div>
                     </form>
@@ -98,11 +90,11 @@
 
             var btn = document.querySelector('button[onclick*="mediaInput"]');
             var originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang tải lên...';
             btn.disabled = true;
 
             $.ajax({
-                url: '/Admin/UploadChapterMedia', 
+                url: '/Admin/UploadChapterMedia',
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -111,18 +103,18 @@
                     if (response.success) {
                         var textarea = document.getElementById('chapterContent');
                         textarea.value += '\n' + response.html + '\n';
-                        console.log("Upload thành công: " + response.url);
+                        alert('Đã thêm thành công!');
                     } else {
                         alert('Lỗi: ' + response.message);
                     }
                 },
                 error: function () {
-                    alert('Lỗi kết nối đến máy chủ.');
+                    alert('Có lỗi xảy ra khi tải file.');
                 },
                 complete: function () {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    fileInput.value = '';
+                    fileInput.value = ''; 
                 }
             });
         }

@@ -1,0 +1,42 @@
+﻿@model IEnumerable<DAMH.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Quản lý Người dùng";
+    Layout = "_AdminLayout";
+}
+
+<h2 class="mb-4">Danh Sách Người Dùng</h2>
+
+<table class="table table-bordered table-hover bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>Email</th>
+            <th>Ngày đăng ký</th>
+            <th>Loại tài khoản</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.RegistrationDate.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    @if (user.IsMember)
+                    {
+                        <span class="badge bg-warning text-dark">VIP</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Thường</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="UserDetails" asp-route-id="@user.Id" class="btn btn-sm btn-info">
+                        <i class="bi bi-eye"></i> Xem lịch sử
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

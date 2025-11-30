@@ -67,6 +67,9 @@ namespace DAMH.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<DateTime>("RegistrationDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
 
@@ -150,6 +153,35 @@ namespace DAMH.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("DAMH.Models.BookMedia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MediaType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookMedias");
+                });
+
             modelBuilder.Entity("DAMH.Models.Chapter", b =>
                 {
                     b.Property<int>("ChapterId")
@@ -180,6 +212,38 @@ namespace DAMH.Migrations
                     b.HasIndex("BookId");
 
                     b.ToTable("Chapters");
+                });
+
+            modelBuilder.Entity("DAMH.Models.ReadingHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AccessTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChapterId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("ChapterId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ReadingHistories");
                 });
 
             modelBuilder.Entity("DAMH.Models.Review", b =>
@@ -352,6 +416,17 @@ namespace DAMH.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DAMH.Models.BookMedia", b =>
+                {
+                    b.HasOne("DAMH.Models.Book", "Book")
+                        .WithMany("MediaFiles")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
+
             modelBuilder.Entity("DAMH.Models.Chapter", b =>
                 {
                     b.HasOne("DAMH.Models.Book", "Book")
@@ -363,6 +438,33 @@ namespace DAMH.Migrations
                     b.Navigation("Book");
                 });
 
+            modelBuilder.Entity("DAMH.Models.ReadingHistory", b =>
+                {
+                    b.HasOne("DAMH.Models.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DAMH.Models.Chapter", "Chapter")
+                        .WithMany()
+                        .HasForeignKey("ChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DAMH.Models.ApplicationUser", "User")
+                        .WithMany("ReadingHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Chapter");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DAMH.Models.Review", b =>
                 {
                     b.HasOne("DAMH.Models.Book", "Book")
@@ -372,7 +474,7 @@ namespace DAMH.Migrations
                         .IsRequired();
 
                     b.HasOne("DAMH.Models.ApplicationUser", "User")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -433,9 +535,18 @@ namespace DAMH.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DAMH.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("ReadingHistories");
+
+                    b.Navigation("Reviews");
+                });
+
             modelBuilder.Entity("DAMH.Models.Book", b =>
                 {
                     b.Navigation("Chapters");
+
+                    b.Navigation("MediaFiles");
 
                     b.Navigation("Reviews");
                 });

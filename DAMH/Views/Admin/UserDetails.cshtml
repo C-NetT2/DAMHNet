@@ -1,0 +1,58 @@
+﻿@model DAMH.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+    Layout = "_AdminLayout";
+}
+
+<h3>Thông tin: <span class="text-primary">@Model.Email</span></h3>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <h4 class="text-success"><i class="bi bi-clock-history"></i> Lịch Sử Đọc Sách</h4>
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Sách</th>
+                    <th>Chương</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var history in Model.ReadingHistories.OrderByDescending(h => h.AccessTime))
+                {
+                    <tr>
+                        <td>@history.Book.Title</td>
+                        <td>@history.Chapter.Title</td>
+                        <td>@history.AccessTime.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h4 class="text-warning"><i class="bi bi-star-fill"></i> Lịch Sử Đánh Giá</h4>
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Sách</th>
+                    <th>Số sao</th>
+                    <th>Bình luận</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedDate))
+                {
+                    <tr>
+                        <td>@review.Book.Title</td>
+                        <td><span class="fw-bold text-warning">@review.Rating</span></td>
+                        <td>@review.Comment</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a asp-action="ManageUsers" class="btn btn-secondary mt-3">Quay lại danh sách</a>
