@@ -6,7 +6,7 @@ using DAMH.Models;
 
 namespace DAMH.Controllers
 {
-    [Authorize(Roles = "Admin")] // Chỉ Admin mới vào được
+    [Authorize(Roles = "Admin")] // Chỉ Admin mới vào được các trang này
     public class AdminController : Controller
     {
         private readonly LibraryContext _context;
@@ -16,77 +16,106 @@ namespace DAMH.Controllers
             _context = context;
         }
 
-        // 1. Danh sách sách
-        [HttpGet]
+        // ==========================================
+        // 1. QUẢN LÝ SÁCH (INDEX)
+        // ==========================================
         public async Task<IActionResult> Index()
         {
             var books = await _context.Books.ToListAsync();
             return View(books);
         }
 
-        // 2. Tạo sách mới (Giao diện)
+        // ==========================================
+        // 2. TẠO SÁCH MỚI (CREATE)
+        // ==========================================
         [HttpGet]
         public IActionResult CreateBook()
         {
             return View();
         }
 
-        // 3. Tạo sách mới (Xử lý)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateBook(Book book)
         {
             if (ModelState.IsValid)
             {
-                await _context.Books.AddAsync(book);
+                _context.Add(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(book);
         }
 
-        // 4. Thêm chương (Giao diện)
+        // ==========================================
+        // 3. THÊM CHƯƠNG MỚI (ADD CHAPTER) - ĐÃ SỬA LỖI
+        // ==========================================
         [HttpGet]
         public async Task<IActionResult> AddChapter(int bookId)
         {
             var book = await _context.Books.FindAsync(bookId);
-            if (book == null) return NotFound();
+            if (book == null) return NotFound("Không tìm thấy sách.");
 
-            ViewBag.BookId = bookId;
             ViewBag.BookTitle = book.Title;
-            return View();
+
+            // Tạo model mới và gán BookId ngay lập tức
+            var newChapter = new Chapter
+            {
+                BookId = bookId,
+                ChapterOrder = 1,
+                IsFree = false
+            };
+
+            return View(newChapter);
         }
 
-        // 5. Thêm chương (Xử lý)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddChapter(Chapter chapter)
         {
+            // --- DÒNG QUAN TRỌNG NHẤT ĐỂ SỬA LỖI ---
+            // Bỏ qua kiểm tra đối tượng Book (vì form chỉ gửi BookId)
+            ModelState.Remove("Book");
+
             if (ModelState.IsValid)
             {
-                await _context.Chapters.AddAsync(chapter);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(ViewBookChapters), new { bookId = chapter.BookId });
+                try
+                {
+                    _context.Add(chapter);
+                    await _context.SaveChangesAsync();
+                    // Lưu thành công -> Quay về danh sách chương
+                    return RedirectToAction(nameof(ViewBookChapters), new { bookId = chapter.BookId });
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Lỗi lưu dữ liệu: " + ex.Message);
+                }
             }
-            ViewBag.BookId = chapter.BookId;
+
+            // Nếu lỗi -> Lấy lại tên sách để hiển thị lại form
+            var book = await _context.Books.FindAsync(chapter.BookId);
+            ViewBag.BookTitle = book?.Title ?? "Không tìm thấy sách";
+
             return View(chapter);
         }
 
-        // 6. Xem các chương của sách
-        [HttpGet]
+        // ==========================================
+        // 4. XEM DANH SÁCH CHƯƠNG
+        // ==========================================
         public async Task<IActionResult> ViewBookChapters(int bookId)
         {
             var book = await _context.Books
-                .Include(b => b.Chapters.OrderBy(c => c.ChapterOrder))
-                .FirstOrDefaultAsync(b => b.BookId == bookId);
+                .Include(b => b.Chapters)
+                .FirstOrDefaultAsync(m => m.BookId == bookId);
 
             if (book == null) return NotFound();
 
             return View(book);
         }
 
-        // 7. Sửa sách (Edit)
-        [HttpGet]
+        // ==========================================
+        // 5. SỬA SÁCH (EDIT)
+        // ==========================================
         public async Task<IActionResult> EditBook(int id)
         {
             var book = await _context.Books.FindAsync(id);
@@ -98,27 +127,55 @@ namespace DAMH.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditBook(int id, Book book)
         {
-            if (id != book.BookId) return BadRequest();
+            if (id != book.BookId) return NotFound();
 
             if (ModelState.IsValid)
             {
-                _context.Update(book);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Update(book);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Books.Any(e => e.BookId == id)) return NotFound();
+                    else throw;
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(book);
         }
 
-        // 8. Xóa sách
-        [HttpPost]
+        // ==========================================
+        // 6. XÓA SÁCH (DELETE)
+        // ==========================================
+        [HttpPost, ActionName("DeleteBook")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteBook(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var book = await _context.Books.FindAsync(id);
             if (book != null)
             {
                 _context.Books.Remove(book);
                 await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ==========================================
+        // 7. XÓA CHƯƠNG (DELETE CHAPTER)
+        // ==========================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteChapter(int id)
+        {
+            var chapter = await _context.Chapters.FindAsync(id);
+            if (chapter != null)
+            {
+                int bookId = chapter.BookId; // Lưu lại ID để quay về đúng chỗ
+                _context.Chapters.Remove(chapter);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(ViewBookChapters), new { bookId = bookId });
             }
             return RedirectToAction(nameof(Index));
         }
