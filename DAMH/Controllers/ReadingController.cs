@@ -35,21 +35,56 @@ namespace DAMH.Controllers
                 var user = await _userManager.GetUserAsync(User);
 
                 // === LOGIC KIỂM TRA QUYỀN (FREEMIUM) ===
+                bool hasAccess = false;
+
                 // 1. Nếu sách Free hoặc Chương Free -> Cho đọc
                 if (book.AccessLevel == AccessLevel.Free || chapter.IsFree == true)
                 {
-                    return View("Read", chapter);
+                    hasAccess = true;
                 }
                 // 2. Nếu User đã đăng nhập + Là VIP + Còn hạn VIP -> Cho đọc
-                else if (user != null && user.IsMember == true && (user.SubscriptionExpiryDate == null || user.SubscriptionExpiryDate > DateTime.Now))
+                else if (user != null && user.IsMember == true &&
+                        (user.SubscriptionExpiryDate == null || user.SubscriptionExpiryDate > DateTime.Now))
                 {
-                    return View("Read", chapter);
+                    hasAccess = true;
                 }
-                // 3. Còn lại -> Chặn (Yêu cầu mua VIP)
-                else
+
+                if (!hasAccess)
                 {
                     return View("AccessDenied", "Nội dung này chỉ dành cho thành viên VIP.");
                 }
+
+                // === LƯU LỊCH SỬ ĐỌC (NẾU ĐÃ ĐĂNG NHẬP) ===
+                if (user != null)
+                {
+                    // Kiểm tra xem đã đọc sách này chưa
+                    var existingHistory = await _context.ReadingHistories
+                        .FirstOrDefaultAsync(rh => rh.UserId == user.Id && rh.BookId == book.BookId);
+
+                    if (existingHistory != null)
+                    {
+                        // CẬP NHẬT: Lưu chương mới nhất vừa đọc
+                        existingHistory.ChapterId = chapterId;
+                        existingHistory.AccessTime = DateTime.Now;
+                        _context.Update(existingHistory);
+                    }
+                    else
+                    {
+                        // TẠO MỚI: Lần đầu đọc sách này
+                        var newHistory = new ReadingHistory
+                        {
+                            UserId = user.Id,
+                            BookId = book.BookId,
+                            ChapterId = chapterId,
+                            AccessTime = DateTime.Now
+                        };
+                        _context.ReadingHistories.Add(newHistory);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+
+                return View("Read", chapter);
             }
             catch (Exception ex)
             {

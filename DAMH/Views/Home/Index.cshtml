@@ -1,4 +1,7 @@
-﻿@model DAMH.Models.ViewModels.HomeViewModel
+﻿@using DAMH.Models
+@using DAMH.Helpers
+@model DAMH.Models.ViewModels.HomeViewModel
+
 @{
     ViewData["Title"] = "Trang chủ";
 }
@@ -13,14 +16,44 @@
                     @foreach (var book in Model.HotStories)
                     {
                         <div class="swiper-slide">
-                            <div class="card h-100 shadow-sm border-0">
-                                <img src="@(book.CoverImageUrl ?? "/images/default-cover.jpg")" class="card-img-top" style="height: 250px; object-fit: cover;" alt="@book.Title">
+                            <div class="card h-100 shadow-sm border-0 book-card">
+                                <div class="position-relative">
+                                    <img src="@(book.CoverImageUrl ?? "https://placehold.co/400x600?text=No+Image")"
+                                         class="card-img-top bg-secondary"
+                                         style="height: 250px; min-height: 250px; object-fit: cover;"
+                                         alt="@book.Title"
+                                         onerror="this.onerror=null; this.src='https://placehold.co/400x600/e9ecef/6c757d?text=Anh+Loi';">
+
+                                    @if (book.AccessLevel == AccessLevel.Premium)
+                                    {
+                                        <span class="position-absolute top-0 start-0 badge bg-warning text-dark m-2 shadow-sm">
+                                            <i class="bi bi-crown"></i> VIP
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="position-absolute top-0 start-0 badge bg-success m-2 shadow-sm">
+                                            Miễn phí
+                                        </span>
+                                    }
+                                </div>
                                 <div class="card-body p-2">
-                                    <h6 class="card-title text-truncate fw-bold mb-1">@book.Title</h6>
-                                    <div class="small text-warning">
-                                        <i class="bi bi-star-fill"></i> @book.AverageRating (@book.TotalReviews)
+                                    <h6 class="card-title text-truncate fw-bold mb-1">
+                                        <a asp-action="Details" asp-route-id="@book.BookId" class="text-decoration-none text-dark stretched-link">
+                                            @book.Title
+                                        </a>
+                                    </h6>
+
+                                    <div class="mb-1">
+                                        <span class="badge bg-info text-dark" style="font-size: 0.7rem;">
+                                            @book.Genre.GetName()
+                                        </span>
                                     </div>
-                                    <a asp-action="Details" asp-route-id="@book.BookId" class="btn btn-sm btn-outline-danger w-100 mt-2 stretched-link">Đọc ngay</a>
+
+                                    <div class="small text-warning">
+                                        <i class="bi bi-star-fill"></i> @book.AverageRating
+                                        <span class="text-muted">(@book.TotalReviews)</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -47,12 +80,38 @@
                     @foreach (var book in Model.NewUpdates)
                     {
                         <div class="col">
-                            <div class="card h-100 shadow-sm">
-                                <img src="@(book.CoverImageUrl ?? "/images/default-cover.jpg")" class="card-img-top" style="height: 180px; object-fit: cover;" alt="@book.Title">
+                            <div class="card h-100 shadow-sm hover-effect">
+                                <div class="position-relative">
+                                    <img src="@(book.CoverImageUrl ?? "https://placehold.co/400x600?text=No+Image")"
+                                         class="card-img-top bg-secondary"
+                                         style="height: 180px; min-height: 180px; object-fit: cover;"
+                                         alt="@book.Title"
+                                         onerror="this.onerror=null; this.src='https://placehold.co/400x600/e9ecef/6c757d?text=Anh+Loi';">
+
+                                    @if (book.AccessLevel == AccessLevel.Premium)
+                                    {
+                                        <span class="position-absolute top-0 start-0 badge bg-warning text-dark m-1 shadow-sm">VIP</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="position-absolute top-0 start-0 badge bg-success m-1 shadow-sm">Free</span>
+                                    }
+                                </div>
                                 <div class="card-body p-2">
-                                    <h6 class="card-title text-truncate mb-1"><a asp-action="Details" asp-route-id="@book.BookId" class="text-decoration-none text-dark">@book.Title</a></h6>
-                                    <span class="badge bg-secondary" style="font-size: 0.7rem;">@book.Genre</span>
-                                    <span class="badge bg-success float-end" style="font-size: 0.7rem;">@book.BookType</span>
+                                    <h6 class="card-title text-truncate mb-1">
+                                        <a asp-action="Details" asp-route-id="@book.BookId" class="text-decoration-none text-dark stretched-link">
+                                            @book.Title
+                                        </a>
+                                    </h6>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                            @book.Genre.GetName()
+                                        </span>
+                                        <span class="badge bg-primary" style="font-size: 0.7rem;">
+                                            @book.BookType.GetName()
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -61,7 +120,6 @@
             }
             else
             {
-
                 <p class="text-muted">Chưa có sách nào.</p>
             }
         </div>
@@ -73,11 +131,28 @@
                 {
                     var book = Model.TopRatedBooks[i];
                     var rankColor = i < 3 ? "bg-warning text-dark" : "bg-light text-secondary";
-                    <a asp-action="Details" asp-route-id="@book.BookId" class="list-group-item list-group-item-action d-flex align-items-center">
-                        <span class="badge @rankColor rounded-pill me-2">@(i + 1)</span>
+
+                    <a asp-action="Details" asp-route-id="@book.BookId" class="list-group-item list-group-item-action d-flex align-items-center p-2">
+                        <span class="badge @rankColor rounded-pill me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                            @(i + 1)
+                        </span>
+
+                        <img src="@(book.CoverImageUrl ?? "https://placehold.co/400x600?text=No")"
+                             class="rounded me-2 bg-secondary"
+                             style="width: 40px; height: 60px; min-height: 60px; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='https://placehold.co/400x600/e9ecef/6c757d?text=IMG';">
+
                         <div class="flex-grow-1 text-truncate">
-                            <h6 class="mb-0">@book.Title</h6>
-                            <small class="text-muted"><i class="bi bi-star-fill text-warning"></i> @book.AverageRating | <i class="bi bi-eye"></i> @book.TotalViews</small>
+                            <h6 class="mb-0 text-truncate" title="@book.Title">@book.Title</h6>
+
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                @book.Genre.GetName()
+                            </small>
+
+                            <small class="text-warning">
+                                <i class="bi bi-star-fill"></i> @book.AverageRating
+                                <span class="text-secondary">(@book.TotalReviews)</span>
+                            </small>
                         </div>
                     </a>
                 }
@@ -97,21 +172,29 @@
             breakpoints: {
                 640: { slidesPerView: 2 },
                 768: { slidesPerView: 3 },
-                1024: { slidesPerView: 5 } 
+                1024: { slidesPerView: 5 }
             }
         });
     </script>
 }
+
 <style>
+    .book-card:hover, .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+    }
+
     .swiper-button-next, .swiper-button-prev {
         color: #dc3545;
         background: rgba(255,255,255,0.8);
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
     }
 
         .swiper-button-next:after, .swiper-button-prev:after {
-            font-size: 18px;
+            font-size: 14px;
+            font-weight: bold;
         }
 </style>

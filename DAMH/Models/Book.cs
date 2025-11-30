@@ -56,7 +56,7 @@ namespace DAMH.Models
 
         [Display(Name = "Cập nhật cuối")]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
-
+        public ICollection<BookMedia> MediaFiles { get; set; } = new List<BookMedia>();
         public ICollection<Chapter> Chapters { get; set; } = new List<Chapter>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
 

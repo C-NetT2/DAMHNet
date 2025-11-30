@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DAMH.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateNewFeatures : Migration
+    public partial class UpdateAdminFeatures : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -42,6 +42,7 @@ namespace DAMH.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsMember = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     SubscriptionExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    RegistrationDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
@@ -230,6 +231,30 @@ namespace DAMH.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "BookMedias",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    BookId = table.Column<int>(type: "int", nullable: false),
+                    Url = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MediaType = table.Column<int>(type: "int", nullable: false),
+                    UploadedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookMedias", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BookMedias_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "BookId",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Chapters",
                 columns: table => new
                 {
@@ -288,6 +313,42 @@ namespace DAMH.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "ReadingHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    BookId = table.Column<int>(type: "int", nullable: false),
+                    ChapterId = table.Column<int>(type: "int", nullable: false),
+                    AccessTime = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReadingHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReadingHistories_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReadingHistories_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "BookId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReadingHistories_Chapters_ChapterId",
+                        column: x => x.ChapterId,
+                        principalTable: "Chapters",
+                        principalColumn: "ChapterId",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -326,9 +387,29 @@ namespace DAMH.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_BookMedias_BookId",
+                table: "BookMedias",
+                column: "BookId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Chapters_BookId",
                 table: "Chapters",
                 column: "BookId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReadingHistories_BookId",
+                table: "ReadingHistories",
+                column: "BookId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReadingHistories_ChapterId",
+                table: "ReadingHistories",
+                column: "ChapterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReadingHistories_UserId",
+                table: "ReadingHistories",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_BookId_UserId",
@@ -361,13 +442,19 @@ namespace DAMH.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Chapters");
+                name: "BookMedias");
+
+            migrationBuilder.DropTable(
+                name: "ReadingHistories");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Chapters");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
