@@ -17,72 +17,53 @@ namespace DAMH.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> ViewChapter(int chapterId)
+        public async Task<IActionResult> ViewChapter(int chapterId, bool isAdminView = false)
         {
             try
             {
-                // Lấy chương sách và thông tin sách cha
                 var chapter = await _context.Chapters
-                    .Include(c => c.Book)
+                    .Include(c => c.Book).ThenInclude(b => b.Chapters)
                     .FirstOrDefaultAsync(c => c.ChapterId == chapterId);
 
-                if (chapter == null)
-                {
-                    return NotFound("Không tìm thấy chương này.");
-                }
+                if (chapter == null) return NotFound("Không tìm thấy chương.");
 
                 var book = chapter.Book;
                 var user = await _userManager.GetUserAsync(User);
 
-                // === LOGIC KIỂM TRA QUYỀN (FREEMIUM) ===
+                // Kiểm tra quyền (VIP/Free)
                 bool hasAccess = false;
+                if (book.AccessLevel == AccessLevel.Free || chapter.IsFree == true) hasAccess = true;
+                else if (user != null && user.IsMember == true && (user.SubscriptionExpiryDate == null || user.SubscriptionExpiryDate > DateTime.Now)) hasAccess = true;
 
-                // 1. Nếu sách Free hoặc Chương Free -> Cho đọc
-                if (book.AccessLevel == AccessLevel.Free || chapter.IsFree == true)
+                // Admin luôn được xem
+                if (User.IsInRole("Admin")) hasAccess = true;
+
+                if (!hasAccess) return View("AccessDenied", "Nội dung VIP.");
+
+                // Lưu lịch sử (chỉ user thường)
+                if (user != null && !User.IsInRole("Admin"))
                 {
-                    hasAccess = true;
-                }
-                // 2. Nếu User đã đăng nhập + Là VIP + Còn hạn VIP -> Cho đọc
-                else if (user != null && user.IsMember == true &&
-                        (user.SubscriptionExpiryDate == null || user.SubscriptionExpiryDate > DateTime.Now))
-                {
-                    hasAccess = true;
-                }
-
-                if (!hasAccess)
-                {
-                    return View("AccessDenied", "Nội dung này chỉ dành cho thành viên VIP.");
-                }
-
-                // === LƯU LỊCH SỬ ĐỌC (NẾU ĐÃ ĐĂNG NHẬP) ===
-                if (user != null)
-                {
-                    // Kiểm tra xem đã đọc sách này chưa
-                    var existingHistory = await _context.ReadingHistories
-                        .FirstOrDefaultAsync(rh => rh.UserId == user.Id && rh.BookId == book.BookId);
-
-                    if (existingHistory != null)
-                    {
-                        // CẬP NHẬT: Lưu chương mới nhất vừa đọc
-                        existingHistory.ChapterId = chapterId;
-                        existingHistory.AccessTime = DateTime.Now;
-                        _context.Update(existingHistory);
-                    }
-                    else
-                    {
-                        // TẠO MỚI: Lần đầu đọc sách này
-                        var newHistory = new ReadingHistory
-                        {
-                            UserId = user.Id,
-                            BookId = book.BookId,
-                            ChapterId = chapterId,
-                            AccessTime = DateTime.Now
-                        };
-                        _context.ReadingHistories.Add(newHistory);
-                    }
-
+                    var existingHistory = await _context.ReadingHistories.FirstOrDefaultAsync(rh => rh.UserId == user.Id && rh.BookId == book.BookId);
+                    if (existingHistory != null) { existingHistory.ChapterId = chapterId; existingHistory.AccessTime = DateTime.Now; _context.Update(existingHistory); }
+                    else { _context.ReadingHistories.Add(new ReadingHistory { UserId = user.Id, BookId = book.BookId, ChapterId = chapterId, AccessTime = DateTime.Now }); }
                     await _context.SaveChangesAsync();
                 }
+
+                // === LOGIC TÌM CHƯƠNG TRƯỚC / SAU ===
+                var allChapters = book.Chapters.OrderBy(c => c.ChapterOrder).ToList();
+                var currentIndex = allChapters.FindIndex(c => c.ChapterId == chapterId);
+
+                int? previousChapterId = null;
+                int? nextChapterId = null;
+
+                if (currentIndex > 0) previousChapterId = allChapters[currentIndex - 1].ChapterId;
+                if (currentIndex < allChapters.Count - 1) nextChapterId = allChapters[currentIndex + 1].ChapterId;
+
+                // Truyền dữ liệu sang View
+                ViewBag.PreviousChapterId = previousChapterId;
+                ViewBag.NextChapterId = nextChapterId;
+                ViewBag.AllChapters = allChapters;
+                ViewBag.IsAdminView = isAdminView; // QUAN TRỌNG: Để biết đường quay về
 
                 return View("Read", chapter);
             }

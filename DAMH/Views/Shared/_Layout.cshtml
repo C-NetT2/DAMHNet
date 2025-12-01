@@ -41,8 +41,13 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-white fw-bold" asp-controller="Home" asp-action="History">
+                                <a class="nav-link text-white" asp-controller="Home" asp-action="History">
                                     <i class="bi bi-clock-history"></i> Lịch sử xem
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-danger fw-bold" asp-controller="Favorites" asp-action="Index">
+                                    <i class="bi bi-heart-fill"></i> Yêu thích
                                 </a>
                             </li>
                         }
@@ -74,7 +79,7 @@
 
     <footer class="border-top footer text-muted bg-light mt-5">
         <div class="container text-center py-3">
-            &copy; 2024 - Thư Viện Online (Đồ Án Môn Học)
+            &copy; 2024 - Thư Viện Online
         </div>
     </footer>
 
@@ -82,6 +87,25 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        function toggleFavorite(bookId, button) {
+            $.post('/Favorites/Toggle', { bookId: bookId }, function(res) {
+                if(res.success) {
+                    var icon = $(button).find('i');
+                    if(res.isFavorited) {
+                        icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                        alert("Đã thêm vào yêu thích!");
+                    } else {
+                        icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
+                        alert("Đã xóa khỏi yêu thích!");
+                    }
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

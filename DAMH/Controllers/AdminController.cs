@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DAMH.Data;
+using DAMH.Models;
+using DAMH.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using DAMH.Data;
-using DAMH.Models;
 
 namespace DAMH.Controllers
 {
@@ -130,7 +131,7 @@ namespace DAMH.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddChapter(Chapter chapter)
         {
-            ModelState.Remove("Book"); // Sửa lỗi validation
+            ModelState.Remove("Book"); 
 
             if (ModelState.IsValid)
             {
@@ -158,7 +159,7 @@ namespace DAMH.Controllers
         {
             if (id != chapter.ChapterId) return NotFound();
 
-            ModelState.Remove("Book"); // Sửa lỗi validation
+            ModelState.Remove("Book"); 
 
             if (ModelState.IsValid)
             {
@@ -230,9 +231,6 @@ namespace DAMH.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ==========================================
-        // 3. QUẢN LÝ MEDIA (ẢNH/VIDEO)
-        // ==========================================
         public async Task<IActionResult> ManageMedia(int bookId)
         {
             var book = await _context.Books
@@ -254,7 +252,6 @@ namespace DAMH.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMedia(BookMedia media)
         {
-            // Fix lỗi validation nếu cần
             ModelState.Remove("Book");
 
             if (ModelState.IsValid)
@@ -282,10 +279,6 @@ namespace DAMH.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
-
-        // ==========================================
-        // 4. QUẢN LÝ NGƯỜI DÙNG
-        // ==========================================
         public async Task<IActionResult> ManageUsers()
         {
             var users = await _context.Users.ToListAsync();
@@ -304,9 +297,6 @@ namespace DAMH.Controllers
             return View(user);
         }
 
-        // ==========================================
-        // 5. QUẢN LÝ ĐÁNH GIÁ (REVIEWS)
-        // ==========================================
         public async Task<IActionResult> ManageReviews()
         {
             var reviews = await _context.Reviews
@@ -334,13 +324,11 @@ namespace DAMH.Controllers
             var existingReview = await _context.Reviews.AsNoTracking().FirstOrDefaultAsync(r => r.ReviewId == id);
             if (existingReview == null) return NotFound();
 
-            // Giữ lại các thông tin không được sửa
             review.UserId = existingReview.UserId;
             review.BookId = existingReview.BookId;
             review.CreatedDate = existingReview.CreatedDate;
             review.UpdatedDate = DateTime.Now;
 
-            // Fix lỗi validation
             ModelState.Remove("User");
             ModelState.Remove("Book");
 
@@ -364,6 +352,87 @@ namespace DAMH.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(ManageReviews));
+        }
+
+        public async Task<IActionResult> Analytics()
+        {
+            var viewModel = new AdminAnalyticsViewModel
+            {
+                TotalUsers = await _context.Users.CountAsync(),
+                TotalBooks = await _context.Books.CountAsync(),
+                TotalFavorites = await _context.Favorites.CountAsync(),
+                TotalReadings = await _context.ReadingHistories.CountAsync()
+            };
+
+            var favGenres = await _context.Favorites
+                .Include(f => f.Book)
+                .GroupBy(f => f.Book.Genre)
+                .Select(g => new { Genre = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            int totalFavs = favGenres.Sum(g => g.Count);
+            if (totalFavs > 0)
+            {
+                viewModel.FavoriteGenreStats = favGenres
+                    .Select(g => new GenreStatistic
+                    {
+                        Genre = g.Genre,
+                        Count = g.Count,
+                        Percentage = Math.Round((double)g.Count / totalFavs * 100, 1)
+                    })
+                    .OrderByDescending(s => s.Percentage)
+                    .ToList();
+            }
+
+            viewModel.MostFavoritedBooks = await _context.Books
+                .Select(b => new BookStatistic
+                {
+                    Book = b,
+                    FavoriteCount = _context.Favorites.Count(f => f.BookId == b.BookId)
+                })
+                .OrderByDescending(b => b.FavoriteCount)
+                .Take(10)
+                .ToListAsync();
+
+            viewModel.MostReadBooks = await _context.Books
+                .Select(b => new BookStatistic
+                {
+                    Book = b,
+                    ReadCount = _context.ReadingHistories.Count(rh => rh.BookId == b.BookId)
+                })
+                .OrderByDescending(b => b.ReadCount)
+                .Take(10)
+                .ToListAsync();
+
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> ManageFavorites(string? userId, int? bookId)
+        {
+            var query = _context.Favorites
+                .Include(f => f.User)
+                .Include(f => f.Book)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(userId)) query = query.Where(f => f.UserId == userId);
+            if (bookId.HasValue) query = query.Where(f => f.BookId == bookId);
+
+            ViewBag.Users = await _context.Users.ToListAsync();
+            ViewBag.Books = await _context.Books.OrderBy(b => b.Title).ToListAsync();
+
+            return View(await query.OrderByDescending(f => f.DateAdded).ToListAsync());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteFavorite(int id)
+        {
+            var fav = await _context.Favorites.FindAsync(id);
+            if (fav != null)
+            {
+                _context.Favorites.Remove(fav);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(ManageFavorites));
         }
     }
 }
