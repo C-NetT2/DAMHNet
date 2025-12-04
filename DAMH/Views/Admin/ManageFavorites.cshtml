@@ -59,7 +59,6 @@
         var userId = ViewBag.UserId as string ?? string.Empty;
         var bookId = ViewBag.BookId as int? ?? null;
 
-        // Tạo URL parameters
         Func<int, string> GetUrl = (page) =>
         {
             var url = $"/Admin/ManageFavorites?page={page}";
