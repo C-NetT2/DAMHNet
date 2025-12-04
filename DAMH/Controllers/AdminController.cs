@@ -352,18 +352,15 @@ namespace DAMH.Controllers
         {
             var viewModel = new AdvancedAnalyticsViewModel();
 
-            // Basic counts
             viewModel.TotalUsers = await _context.Users.CountAsync();
             viewModel.TotalBooks = await _context.Books.CountAsync();
             viewModel.TotalFavorites = await _context.Favorites.CountAsync();
             viewModel.TotalReadings = await _context.ReadingHistories.CountAsync();
 
-            // Date calculations
             var now = DateTime.Now;
             var thisMonthStart = new DateTime(now.Year, now.Month, 1);
             var lastMonthStart = thisMonthStart.AddMonths(-1);
 
-            // User Growth
             viewModel.NewUsersThisMonth = await _context.Users
                 .Where(u => u.RegistrationDate >= thisMonthStart)
                 .CountAsync();
@@ -376,7 +373,6 @@ namespace DAMH.Controllers
                 ? Math.Round(((double)(viewModel.NewUsersThisMonth - viewModel.NewUsersLastMonth) / viewModel.NewUsersLastMonth) * 100, 1)
                 : viewModel.NewUsersThisMonth > 0 ? 100 : 0;
 
-            // VIP Statistics
             viewModel.TotalVipUsers = await _context.Users
                 .Where(u => u.IsMember && u.SubscriptionExpiryDate > DateTime.Now)
                 .CountAsync();
@@ -396,7 +392,6 @@ namespace DAMH.Controllers
                 ? Math.Round(((double)(viewModel.NewVipThisMonth - viewModel.NewVipLastMonth) / viewModel.NewVipLastMonth) * 100, 1)
                 : viewModel.NewVipThisMonth > 0 ? 100 : 0;
 
-            // Revenue Statistics
             viewModel.TotalRevenue = await _context.PaymentTransactions
                 .Where(t => t.Status == "Completed")
                 .SumAsync(t => t.Amount);
@@ -408,7 +403,6 @@ namespace DAMH.Controllers
                 ? Math.Round(((double)(viewModel.RevenueThisMonth - viewModel.RevenueLastMonth) / (double)viewModel.RevenueLastMonth) * 100, 1)
                 : viewModel.RevenueThisMonth > 0 ? 100 : 0;
 
-            // Package Sales Distribution
             var packageSales = await _context.PaymentTransactions
                 .Where(t => t.Status == "Completed")
                 .GroupBy(t => t.PackageType)
@@ -420,7 +414,6 @@ namespace DAMH.Controllers
                 viewModel.PackageSales[sale.Package.GetName()] = sale.Count;
             }
 
-            // Monthly Revenue for last 6 months
             for (int i = 5; i >= 0; i--)
             {
                 var monthStart = thisMonthStart.AddMonths(-i);
@@ -803,7 +796,6 @@ namespace DAMH.Controllers
                 user.SubscriptionExpiryDate = null;
                 _context.Users.Update(user);
 
-                // Xóa role "Member"
                 var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Member");
                 if (memberRole != null)
                 {
@@ -836,7 +828,6 @@ namespace DAMH.Controllers
 
             var model = new dynamic[6];
 
-            // 1. Người dùng mới tháng này vs tháng trước
             var newUsersThisMonth = await _context.Users
                 .Where(u => u.RegistrationDate >= thisMonthStart)
                 .CountAsync();
@@ -853,7 +844,6 @@ namespace DAMH.Controllers
             ViewBag.NewUsersLastMonth = newUsersLastMonth;
             ViewBag.UserGrowthPercent = userGrowthPercent;
 
-            // 2. Doanh thu tháng này vs tháng trước
             var revenueThisMonth = await _context.PaymentTransactions
                 .Where(t => t.TransactionDate >= thisMonthStart && t.Status == "Completed")
                 .SumAsync(t => t.Amount);
@@ -870,7 +860,6 @@ namespace DAMH.Controllers
             ViewBag.RevenueLastMonth = revenueLastMonth;
             ViewBag.RevenueGrowthPercent = revenueGrowthPercent;
 
-            // 3. VIP conversions tháng này vs tháng trước
             var vipThisMonth = await _context.PaymentTransactions
                 .Where(t => t.TransactionDate >= thisMonthStart && t.Status == "Completed")
                 .CountAsync();
@@ -887,7 +876,6 @@ namespace DAMH.Controllers
             ViewBag.VipLastMonth = vipLastMonth;
             ViewBag.VipGrowthPercent = vipGrowthPercent;
 
-            // 4. Biểu đồ VIP conversions theo ngày trong tháng này
             var vipConversionsByDay = await _context.PaymentTransactions
                 .Where(t => t.TransactionDate >= thisMonthStart && t.Status == "Completed")
                 .GroupBy(t => t.TransactionDate.Date)
@@ -919,7 +907,6 @@ namespace DAMH.Controllers
             ViewBag.DailyCounts = System.Text.Json.JsonSerializer.Serialize(dailyCounts);
             ViewBag.DailyRevenues = System.Text.Json.JsonSerializer.Serialize(dailyRevenues);
 
-            // 5. Biểu đồ VIP conversions theo giờ hôm nay
             var todayStart = now.Date;
             var hourlyVips = await _context.PaymentTransactions
                 .Where(t => t.TransactionDate >= todayStart && t.Status == "Completed")
@@ -940,7 +927,6 @@ namespace DAMH.Controllers
             ViewBag.HourlyLabels = System.Text.Json.JsonSerializer.Serialize(hourlyLabels);
             ViewBag.HourlyCounts = System.Text.Json.JsonSerializer.Serialize(hourlyCounts);
 
-            // 6. Top VIP packages
             var topPackages = await _context.PaymentTransactions
                 .Where(t => t.Status == "Completed")
                 .GroupBy(t => t.PackageType)
@@ -955,5 +941,202 @@ namespace DAMH.Controllers
 
             return View();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageBookAssets(string searchTerm = "", int page = 1)
+        {
+            const int pageSize = 20;
+
+            var query = _context.Books.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(b => b.Title.Contains(searchTerm) ||
+                                         (b.Author != null && b.Author.Contains(searchTerm)));
+            }
+
+            var totalBooks = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalBooks / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var books = await query
+                .OrderBy(b => b.Title)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalBooks = totalBooks;
+            ViewBag.SearchTerm = searchTerm;
+
+            return View(books);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageCover(int bookId)
+        {
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null) return NotFound();
+
+            return View(book);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadCover(int bookId, IFormFile? coverFile, string? coverUrl)
+        {
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null) return NotFound();
+
+            try
+            {
+                if (coverFile != null && coverFile.Length > 0)
+                {
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                    var extension = Path.GetExtension(coverFile.FileName).ToLower();
+
+                    if (!allowedExtensions.Contains(extension))
+                    {
+                        TempData["ErrorMessage"] = "Chỉ chấp nhận file ảnh (jpg, png, gif, webp)";
+                        return RedirectToAction(nameof(ManageCover), new { bookId });
+                    }
+
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "covers");
+                    if (!Directory.Exists(uploadPath))
+                        Directory.CreateDirectory(uploadPath);
+
+                    var fileName = $"{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(uploadPath, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await coverFile.CopyToAsync(stream);
+                    }
+
+                    book.CoverImageUrl = $"/uploads/covers/{fileName}";
+                }
+                else if (!string.IsNullOrWhiteSpace(coverUrl))
+                {
+                    book.CoverImageUrl = coverUrl;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Vui lòng upload file hoặc nhập URL";
+                    return RedirectToAction(nameof(ManageCover), new { bookId });
+                }
+
+                book.LastUpdated = DateTime.Now;
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Cập nhật ảnh bìa thành công!";
+                return RedirectToAction(nameof(ManageBookAssets));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Lỗi khi upload ảnh: {ex.Message}";
+                return RedirectToAction(nameof(ManageCover), new { bookId });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCover(int bookId)
+        {
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null) return NotFound();
+
+            book.CoverImageUrl = null;
+            book.LastUpdated = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đã xóa ảnh bìa thành công!";
+            return RedirectToAction(nameof(ManageCover), new { bookId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageBookMedia(int bookId)
+        {
+            var book = await _context.Books
+                .Include(b => b.MediaFiles)
+                .FirstOrDefaultAsync(b => b.BookId == bookId);
+
+            if (book == null) return NotFound();
+
+            return View(book);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddBookMedia(int bookId, IFormFile? mediaFile, string? mediaUrl, MediaType mediaType)
+        {
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null) return NotFound();
+
+            try
+            {
+                string finalUrl;
+
+                if (mediaFile != null && mediaFile.Length > 0)
+                {
+                    var allowedExtensions = mediaType == MediaType.Image
+                        ? new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" }
+                        : new[] { ".mp4", ".webm", ".ogg" };
+
+                    var extension = Path.GetExtension(mediaFile.FileName).ToLower();
+
+                    if (!allowedExtensions.Contains(extension))
+                    {
+                        TempData["ErrorMessage"] = $"Định dạng file không hợp lệ cho {mediaType}";
+                        return RedirectToAction(nameof(ManageBookMedia), new { bookId });
+                    }
+
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "media");
+                    if (!Directory.Exists(uploadPath))
+                        Directory.CreateDirectory(uploadPath);
+
+                    var fileName = $"{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(uploadPath, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await mediaFile.CopyToAsync(stream);
+                    }
+
+                    finalUrl = $"/uploads/media/{fileName}";
+                }
+                else if (!string.IsNullOrWhiteSpace(mediaUrl))
+                {
+                    finalUrl = mediaUrl;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Vui lòng upload file hoặc nhập URL";
+                    return RedirectToAction(nameof(ManageBookMedia), new { bookId });
+                }
+
+                var bookMedia = new BookMedia
+                {
+                    BookId = bookId,
+                    Url = finalUrl,
+                    MediaType = mediaType,
+                    UploadedDate = DateTime.Now
+                };
+
+                _context.BookMedias.Add(bookMedia);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Thêm media thành công!";
+                return RedirectToAction(nameof(ManageBookMedia), new { bookId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Lỗi khi thêm media: {ex.Message}";
+                return RedirectToAction(nameof(ManageBookMedia), new { bookId });
+            }
+        }
+
     }
 }

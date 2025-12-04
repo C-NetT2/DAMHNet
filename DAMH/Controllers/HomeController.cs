@@ -48,6 +48,7 @@ namespace DAMH.Controllers
                         .Take(10)
                         .ToListAsync();
                     break;
+
                 case "favorites":
                     topRatedBooks = await _context.Books
                         .Select(b => new
@@ -61,7 +62,8 @@ namespace DAMH.Controllers
                         .Select(x => x.Book)
                         .ToListAsync();
                     break;
-                default:
+
+                default: // rating
                     topRatedBooks = await _context.Books
                         .Include(b => b.Reviews)
                         .Where(b => b.Reviews.Any())

@@ -84,7 +84,7 @@ namespace DAMH.Controllers
                     UserId = userId,
                     Comment = comment,
                     CreatedDate = DateTime.Now,
-                    Rating = 0  // Bình luận không có rating
+                    Rating = 0  
                 };
 
                 _context.Reviews.Add(review);

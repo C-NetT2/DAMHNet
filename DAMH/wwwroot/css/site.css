@@ -1,149 +1,95 @@
-html {
-  font-size: 14px;
-  height: 100%;
-}
+/* Add this to wwwroot/css/site.css */
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* ===== STICKY FOOTER FIX ===== */
+html, body {
+    height: 100%;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 main {
-  flex: 1 0 auto;
-  min-height: calc(100vh - 180px);
+    flex: 1 0 auto;
+    min-height: calc(100vh - 200px);
 }
 
 .footer {
-  flex-shrink: 0;
-  padding: 15px 0 !important;
-  line-height: 1.5 !important;
-  background-color: #f8f9fa;
-  border-top: 1px solid #dee2e6;
-  margin-top: auto;
+    flex-shrink: 0;
+    padding: 1rem 0; 
+    margin-top: auto;
+    background-color: #f8f9fa;
+}
+.book-cover {
+    background-color: #e9ecef;
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .book-cover-placeholder {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: bold;
-  text-align: center;
-  padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
 }
 
-.book-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.book-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
-}
-
-.profile-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  padding: 40px 0;
-  margin-bottom: 30px;
-}
-
-.profile-avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  color: #667eea;
-  margin: 0 auto 15px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.vip-badge {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: #fff;
-  padding: 8px 20px;
-  border-radius: 25px;
-  font-weight: bold;
-  display: inline-block;
-  margin-top: 10px;
+img.card-img-top {
+    min-height: 180px;
+    object-fit: cover;
+    background-color: #e9ecef;
 }
 
 .admin-sidebar {
-  min-height: 100vh;
-  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
 }
 
-.admin-sidebar .nav-link {
-  border-radius: 8px;
-  margin-bottom: 5px;
-  transition: all 0.3s;
+    .admin-sidebar .nav-link {
+        border-radius: 5px;
+        margin-bottom: 5px;
+        transition: all 0.3s;
+    }
+
+        .admin-sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .admin-sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+
+.books-grid {
+    --bs-gutter-x: 1rem;
 }
 
-.admin-sidebar .nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding-left: 20px;
+@media (min-width: 1400px) {
+    .books-grid.row-cols-xxl-6 > * {
+        flex: 0 0 auto;
+        width: 16.666667%;
+    }
 }
 
-.admin-sidebar .nav-link.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.favorite-btn {
-  transition: all 0.3s ease;
-}
-
-.favorite-btn:hover {
-  transform: scale(1.1);
-}
-
-.favorite-btn.is-favorited i {
-  animation: heartBeat 0.5s ease;
-}
-
-@keyframes heartBeat {
-  0%, 100% {
-    transform: scale(1);
-  }
-  25% {
-    transform: scale(1.3);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  75% {
-    transform: scale(1.25);
-  }
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .books-grid.row-cols-xl-5 > * {
+        flex: 0 0 auto;
+        width: 20%;
+    }
 }
 
 @media (max-width: 768px) {
-  main {
-    min-height: calc(100vh - 220px);
-  }
+    .footer {
+        padding: 0.5rem 0;
+    }
 
-  .profile-avatar {
-    width: 80px;
-    height: 80px;
-    font-size: 32px;
-  }
+    main {
+        min-height: calc(100vh - 150px);
+    }
 }

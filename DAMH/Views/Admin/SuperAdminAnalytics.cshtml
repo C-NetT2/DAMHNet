@@ -11,9 +11,7 @@
         <small class="text-muted">Tháng @DateTime.Now.ToString("MM/yyyy")</small>
     </div>
 
-    <!-- KPI Cards Row 1 -->
     <div class="row mb-4">
-        <!-- Users Growth -->
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
@@ -46,7 +44,6 @@
             </div>
         </div>
 
-        <!-- Revenue Growth -->
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
@@ -79,7 +76,6 @@
             </div>
         </div>
 
-        <!-- VIP Conversions -->
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
@@ -113,9 +109,7 @@
         </div>
     </div>
 
-    <!-- Charts Row -->
     <div class="row mb-4">
-        <!-- Daily VIP Conversions Chart -->
         <div class="col-lg-6 mb-3">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-light border-bottom">
@@ -127,7 +121,6 @@
             </div>
         </div>
 
-        <!-- Hourly VIP Conversions Chart -->
         <div class="col-lg-6 mb-3">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-light border-bottom">
@@ -140,7 +133,6 @@
         </div>
     </div>
 
-    <!-- Package Distribution -->
     <div class="row">
         <div class="col-lg-6 mb-3">
             <div class="card shadow-sm border-0">
@@ -153,7 +145,6 @@
             </div>
         </div>
 
-        <!-- Daily Revenue Chart -->
         <div class="col-lg-6 mb-3">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-light border-bottom">
@@ -170,7 +161,6 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Parse data from ViewBag
         var dailyLabels = @Html.Raw(ViewBag.DailyLabels);
         var dailyCounts = @Html.Raw(ViewBag.DailyCounts);
         var dailyRevenues = @Html.Raw(ViewBag.DailyRevenues);
@@ -179,7 +169,6 @@
         var packageLabels = @Html.Raw(ViewBag.TopPackagesLabels);
         var packageCounts = @Html.Raw(ViewBag.TopPackagesCounts);
 
-        // Daily Chart
         var dailyCtx = document.getElementById('dailyChart').getContext('2d');
         new Chart(dailyCtx, {
             type: 'line',
@@ -205,7 +194,6 @@
             }
         });
 
-        // Hourly Chart
         var hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
         new Chart(hourlyCtx, {
             type: 'bar',
@@ -227,7 +215,6 @@
             }
         });
 
-        // Package Chart
         var packageCtx = document.getElementById('packageChart').getContext('2d');
         new Chart(packageCtx, {
             type: 'doughnut',
@@ -249,7 +236,6 @@
             }
         });
 
-        // Revenue Chart
         var revenueCtx = document.getElementById('revenueChart').getContext('2d');
         new Chart(revenueCtx, {
             type: 'bar',

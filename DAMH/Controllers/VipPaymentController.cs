@@ -70,7 +70,6 @@ namespace DAMH.Controllers
 
                 await _userManager.UpdateAsync(user);
                 
-                // Gán role "Member" cho user VIP
                 var isMember = await _userManager.IsInRoleAsync(user, "Member");
                 if (!isMember)
                 {

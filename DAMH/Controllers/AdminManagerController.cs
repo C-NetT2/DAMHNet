@@ -26,7 +26,6 @@ namespace DAMH.Controllers
             var admins = await _userManager.GetUsersInRoleAsync("Admin");
             var superAdmins = await _userManager.GetUsersInRoleAsync("SuperAdmin");
             
-            // Combine both Admin and SuperAdmin users
             var allManageableUsers = admins.Concat(superAdmins).OrderBy(a => a.Email).ToList();
             return View(allManageableUsers);
         }
@@ -63,7 +62,6 @@ namespace DAMH.Controllers
             var result = await _userManager.CreateAsync(adminUser, model.Password);
             if (result.Succeeded)
             {
-                // Assign role based on model selection
                 string roleToAssign = model.Role == "SuperAdmin" ? "SuperAdmin" : "Admin";
                 await _userManager.AddToRoleAsync(adminUser, roleToAssign);
                 TempData["SuccessMessage"] = $"Đã tạo tài khoản {roleToAssign}: {model.Email}";
