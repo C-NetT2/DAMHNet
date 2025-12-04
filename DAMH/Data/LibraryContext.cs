@@ -17,6 +17,7 @@ namespace DAMH.Data
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<BookMedia> BookMedias { get; set; }
         public DbSet<ReadingHistory> ReadingHistories { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,6 +56,7 @@ namespace DAMH.Data
                 .WithMany(u => u.ReadingHistories)
                 .HasForeignKey(h => h.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Favorite>()
                 .HasOne(f => f.User)
                 .WithMany()
@@ -71,6 +73,11 @@ namespace DAMH.Data
                 .HasIndex(f => new { f.UserId, f.BookId })
                 .IsUnique();
 
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

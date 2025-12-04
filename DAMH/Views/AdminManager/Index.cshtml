@@ -1,4 +1,8 @@
+@using Microsoft.AspNetCore.Identity
+@using DAMH.Models
+
 @model IEnumerable<DAMH.Models.ApplicationUser>
+@inject UserManager<ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Quản lý Admin";
     Layout = "_AdminLayout";
@@ -21,19 +25,27 @@
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-dark">
                         <tr>
-                            <th style="width: 40%">Email</th>
+                            <th style="width: 35%">Email</th>
+                            <th style="width: 20%">Quyền</th>
                             <th style="width: 25%">Họ tên</th>
-                            <th style="width: 20%">Ngày tạo</th>
+                            <th style="width: 15%">Ngày tạo</th>
                             <th style="width: 15%" class="text-end">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var admin in Model)
                         {
+                            var roles = await UserManager.GetRolesAsync(admin);
+                            var role = roles.FirstOrDefault() ?? "User";
+                            var roleBadge = role == "SuperAdmin" ? "bg-danger" : "bg-warning";
+                            
                             <tr>
                                 <td>
                                     <i class="bi bi-person-badge text-primary"></i>
                                     <strong>@admin.Email</strong>
+                                </td>
+                                <td>
+                                    <span class="badge @roleBadge">@role</span>
                                 </td>
                                 <td>@(admin.FullName ?? "Chưa cập nhật")</td>
                                 <td>

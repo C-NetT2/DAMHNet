@@ -2,41 +2,231 @@
 @{
     ViewData["Title"] = "Quản lý Người dùng";
     Layout = "_AdminLayout";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalUsers = ViewBag.TotalUsers ?? 0;
+    var searchTerm = ViewBag.SearchTerm ?? "";
 }
 
-<h2 class="mb-4">Danh Sách Người Dùng</h2>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="bi bi-people-fill"></i> Quản Lý Người Dùng
+            <span class="badge bg-secondary">@totalUsers người dùng</span>
+        </h2>
+    </div>
 
-<table class="table table-bordered table-hover bg-white">
-    <thead class="table-dark">
-        <tr>
-            <th>Email</th>
-            <th>Ngày đăng ký</th>
-            <th>Loại tài khoản</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-            <tr>
-                <td>@user.Email</td>
-                <td>@user.RegistrationDate.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>
-                    @if (user.IsMember)
-                    {
-                        <span class="badge bg-warning text-dark">VIP</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Thường</span>
-                    }
-                </td>
-                <td>
-                    <a asp-action="UserDetails" asp-route-id="@user.Id" class="btn btn-sm btn-info">
-                        <i class="bi bi-eye"></i> Xem lịch sử
+    <!-- Search & Filter Bar -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form asp-action="ManageUsers" method="get" class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-search"></i> Tìm kiếm theo Email hoặc Tên
+                    </label>
+                    <input type="text" name="searchTerm" class="form-control"
+                           value="@searchTerm" placeholder="Nhập email hoặc tên người dùng...">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <a asp-action="ManageUsers" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-counterclockwise"></i> Xóa bộ lọc
                     </a>
-                </td>
-            </tr>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 25%">Email</th>
+                                <th style="width: 15%">Họ tên</th>
+                                <th style="width: 12%">Ngày đăng ký</th>
+                                <th style="width: 10%">Trạng thái</th>
+                                <th style="width: 15%">Hạn VIP</th>
+                                <th style="width: 18%" class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowNumber = (currentPage - 1) * 30 + 1;
+                            }
+                            @foreach (var user in Model)
+                            {
+                                var isVipActive = user.IsMember && user.SubscriptionExpiryDate > DateTime.Now;
+                                <tr>
+                                    <td>@rowNumber</td>
+                                    <td>
+                                        <i class="bi bi-person-circle text-primary"></i>
+                                        <strong>@user.Email</strong>
+                                    </td>
+                                    <td>@(user.FullName ?? "Chưa cập nhật")</td>
+                                    <td>
+                                        <small class="text-muted">
+                                            @user.RegistrationDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if (isVipActive)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-crown-fill"></i> VIP
+                                            </span>
+                                        }
+                                        else if (user.IsMember)
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-clock-history"></i> Hết hạn
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark">Thường</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.SubscriptionExpiryDate.HasValue)
+                                        {
+                                            if (user.SubscriptionExpiryDate.Value > DateTime.Now.AddYears(50))
+                                            {
+                                                <span class="badge bg-dark">Trọn đời</span>
+                                            }
+                                            else if (user.SubscriptionExpiryDate.Value > DateTime.Now)
+                                            {
+                                                var daysLeft = (user.SubscriptionExpiryDate.Value - DateTime.Now).Days;
+                                                <small class="text-success">
+                                                    @user.SubscriptionExpiryDate.Value.ToString("dd/MM/yyyy")
+                                                    <br><span class="badge bg-success">Còn @daysLeft ngày</span>
+                                                </small>
+                                            }
+                                            else
+                                            {
+                                                <small class="text-danger">
+                                                    @user.SubscriptionExpiryDate.Value.ToString("dd/MM/yyyy")
+                                                    <br><span class="badge bg-danger">Đã hết hạn</span>
+                                                </small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">N/A</small>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="EditUser" asp-route-id="@user.Id"
+                                               class="btn btn-sm btn-warning" title="Chỉnh sửa">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a asp-action="UserDetails" asp-route-id="@user.Id"
+                                               class="btn btn-sm btn-info text-white" title="Chi tiết">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <form asp-action="DeleteUser" asp-route-id="@user.Id"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng @user.Email không?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                rowNumber++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="ManageUsers"
+                           asp-route-page="@(currentPage - 1)"
+                           asp-route-searchTerm="@searchTerm">
+                            <i class="bi bi-chevron-left"></i> Trước
+                        </a>
+                    </li>
+
+                    @{
+                        int startPage = Math.Max(1, currentPage - 2);
+                        int endPage = Math.Min(totalPages, currentPage + 2);
+                    }
+
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="ManageUsers"
+                               asp-route-page="1" asp-route-searchTerm="@searchTerm">1</a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" asp-action="ManageUsers"
+                               asp-route-page="@i" asp-route-searchTerm="@searchTerm">@i</a>
+                        </li>
+                    }
+
+                    @if (endPage < totalPages)
+                    {
+                        @if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" asp-action="ManageUsers"
+                               asp-route-page="@totalPages" asp-route-searchTerm="@searchTerm">@totalPages</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="ManageUsers"
+                           asp-route-page="@(currentPage + 1)"
+                           asp-route-searchTerm="@searchTerm">
+                            Sau <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="text-center text-muted mb-4">
+                Trang @currentPage / @totalPages (Tổng @totalUsers người dùng)
+            </div>
         }
-    </tbody>
-</table>
+    }
+    else
+    {
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle display-1"></i>
+            <h4 class="mt-3">Không tìm thấy người dùng nào</h4>
+            @if (!string.IsNullOrEmpty(searchTerm))
+            {
+                <p>Không có kết quả cho từ khóa: "<strong>@searchTerm</strong>"</p>
+                <a asp-action="ManageUsers" class="btn btn-primary mt-2">Xem tất cả người dùng</a>
+            }
+        </div>
+    }
+</div>

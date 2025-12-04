@@ -1,0 +1,243 @@
+﻿@using DAMH.Models
+@{
+    ViewData["Title"] = "Nâng cấp VIP";
+    var currentUser = ViewBag.CurrentUser as ApplicationUser;
+}
+
+<div class="container mt-5 mb-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="bi bi-crown-fill text-warning"></i> Nâng Cấp Tài Khoản VIP
+        </h1>
+        <p class="lead text-muted">Truy cập không giới hạn toàn bộ nội dung cao cấp</p>
+    </div>
+
+    @if (currentUser?.IsMember == true && currentUser.SubscriptionExpiryDate > DateTime.Now)
+    {
+        <div class="alert alert-success text-center mb-5">
+            <i class="bi bi-check-circle-fill"></i>
+            <h5 class="mb-2">Bạn đang là thành viên VIP!</h5>
+            Tài khoản VIP của bạn có hiệu lực đến: <strong>@currentUser.SubscriptionExpiryDate?.ToString("dd/MM/yyyy HH:mm")</strong>
+            <br><small class="text-muted">Chọn gói bên dưới để gia hạn VIP thêm thời gian</small>
+        </div>
+    }
+    else if (currentUser?.IsMember == true && currentUser.SubscriptionExpiryDate <= DateTime.Now)
+    {
+        <div class="alert alert-warning text-center mb-5">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <h5 class="mb-2">Gói VIP của bạn đã hết hạn</h5>
+            Gia hạn ngay để tiếp tục sử dụng các tính năng VIP
+        </div>
+    }
+
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4 mb-5">
+        <div class="col">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h5 class="mb-0">1 THÁNG</h5>
+                </div>
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="display-6 fw-bold text-primary mb-3">50,000₫</div>
+                    <ul class="list-unstyled text-start mb-4 flex-grow-1">
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Truy cập toàn bộ nội dung VIP</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Không quảng cáo</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Đọc offline</li>
+                    </ul>
+                    <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#paymentModal"
+                            data-package="@VipPackageType.OneMonth" data-price="50,000" data-months="1">
+                        @(currentUser?.IsMember == true ? "Gia hạn" : "Chọn gói")
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow border-success">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h5 class="mb-0">3 THÁNG</h5>
+                    <small class="badge bg-light text-success">Tiết kiệm 13%</small>
+                </div>
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="display-6 fw-bold text-success mb-3">130,000₫</div>
+                    <ul class="list-unstyled text-start mb-4 flex-grow-1">
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Tất cả tính năng gói 1 tháng</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Hỗ trợ ưu tiên</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Tiết kiệm 20,000₫</li>
+                    </ul>
+                    <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#paymentModal"
+                            data-package="@VipPackageType.ThreeMonths" data-price="130,000" data-months="3">
+                        @(currentUser?.IsMember == true ? "Gia hạn" : "Chọn gói")
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-lg border-warning position-relative" style="transform: scale(1.05);">
+                <span class="position-absolute top-0 start-50 translate-middle badge bg-warning text-dark px-3 py-2">
+                    <i class="bi bi-star-fill"></i> PHỔ BIẾN
+                </span>
+                <div class="card-header bg-warning text-dark text-center py-3">
+                    <h5 class="mb-0 fw-bold">6 THÁNG</h5>
+                    <small class="badge bg-light text-warning">Tiết kiệm 17%</small>
+                </div>
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="display-6 fw-bold text-warning mb-3">250,000₫</div>
+                    <ul class="list-unstyled text-start mb-4 flex-grow-1">
+                        <li><i class="bi bi-check-circle-fill text-warning"></i> Tất cả tính năng gói 3 tháng</li>
+                        <li><i class="bi bi-check-circle-fill text-warning"></i> Ưu đãi đặc biệt</li>
+                        <li><i class="bi bi-check-circle-fill text-warning"></i> Tiết kiệm 50,000₫</li>
+                    </ul>
+                    <button class="btn btn-warning text-dark w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#paymentModal"
+                            data-package="@VipPackageType.SixMonths" data-price="250,000" data-months="6">
+                        @(currentUser?.IsMember == true ? "Gia hạn" : "Chọn gói")
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow border-danger">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h5 class="mb-0">1 NĂM</h5>
+                    <small class="badge bg-light text-danger">Tiết kiệm 25%</small>
+                </div>
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="display-6 fw-bold text-danger mb-3">450,000₫</div>
+                    <ul class="list-unstyled text-start mb-4 flex-grow-1">
+                        <li><i class="bi bi-check-circle-fill text-danger"></i> Tất cả tính năng gói 6 tháng</li>
+                        <li><i class="bi bi-check-circle-fill text-danger"></i> Quà tặng độc quyền</li>
+                        <li><i class="bi bi-check-circle-fill text-danger"></i> Tiết kiệm 150,000₫</li>
+                    </ul>
+                    <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#paymentModal"
+                            data-package="@VipPackageType.OneYear" data-price="450,000" data-months="12">
+                        @(currentUser?.IsMember == true ? "Gia hạn" : "Chọn gói")
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-lg border-dark">
+                <div class="card-header bg-dark text-white text-center py-3">
+                    <h5 class="mb-0">TRỌN ĐỜI</h5>
+                    <small class="badge bg-light text-dark">Giá trị tốt nhất</small>
+                </div>
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="display-6 fw-bold text-dark mb-3">1,200,000₫</div>
+                    <ul class="list-unstyled text-start mb-4 flex-grow-1">
+                        <li><i class="bi bi-check-circle-fill text-dark"></i> Tất cả tính năng cao cấp</li>
+                        <li><i class="bi bi-check-circle-fill text-dark"></i> <strong>Trọn đời không giới hạn</strong></li>
+                        <li><i class="bi bi-check-circle-fill text-dark"></i> Không cần gia hạn</li>
+                    </ul>
+                    <button class="btn btn-dark w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#paymentModal"
+                            data-package="@VipPackageType.Lifetime" data-price="1,200,000" data-months="999">
+                        @(currentUser?.IsMember == true ? "Nâng cấp" : "Chọn gói")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-light border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h4 class="mb-3"><i class="bi bi-info-circle-fill text-primary"></i> Lợi ích khi nâng cấp VIP</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Truy cập không giới hạn toàn bộ nội dung VIP</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Đọc truyện, sách độc quyền</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Không có quảng cáo làm phiền</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Tải về để đọc offline</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Hỗ trợ khách hàng ưu tiên</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Cập nhật nội dung mới sớm nhất</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="ProcessPayment" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-credit-card"></i> Xác Nhận Thanh Toán
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i> <strong>Lưu ý:</strong> Đây là hệ thống thanh toán mô phỏng. Trong thực tế, bạn sẽ được chuyển đến cổng thanh toán an toàn.
+                    </div>
+
+                    <input type="hidden" name="packageType" id="modalPackageType" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Gói đã chọn:</label>
+                        <div class="alert alert-info mb-0">
+                            <h5 class="mb-0" id="modalPackageInfo"></h5>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                        <input type="text" name="fullName" class="form-control" value="@currentUser?.FullName" required
+                               placeholder="Nguyễn Văn A">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                        <input type="tel" name="phoneNumber" class="form-control" value="@currentUser?.PhoneNumber" required
+                               placeholder="0123456789" pattern="[0-9]{10,11}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Phương thức thanh toán (Mô phỏng)</label>
+                        <select class="form-select" disabled>
+                            <option>Thẻ ATM / Visa / MasterCard</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <i class="bi bi-shield-check"></i> Thông tin của bạn được bảo mật tuyệt đối
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-circle"></i> Xác Nhận Thanh Toán
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var paymentModal = document.getElementById('paymentModal');
+            paymentModal.addEventListener('show.bs.modal', function(event) {
+                var button = event.relatedTarget;
+                var packageType = button.getAttribute('data-package');
+                var price = button.getAttribute('data-price');
+                var months = button.getAttribute('data-months');
+
+                var packageInfo = months === '999' ?
+                    'Gói TRỌN ĐỜI - ' + price + '₫' :
+                    'Gói ' + months + ' tháng - ' + price + '₫';
+
+                document.getElementById('modalPackageType').value = packageType;
+                document.getElementById('modalPackageInfo').textContent = packageInfo;
+            });
+        });
+    </script>
+}

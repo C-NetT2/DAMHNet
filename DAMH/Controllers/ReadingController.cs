@@ -34,7 +34,7 @@ namespace DAMH.Controllers
                 if (book.AccessLevel == AccessLevel.Free || chapter.IsFree == true) hasAccess = true;
                 else if (user != null && user.IsMember == true && (user.SubscriptionExpiryDate == null || user.SubscriptionExpiryDate > DateTime.Now)) hasAccess = true;
 
-                if (User.IsInRole("Admin")) hasAccess = true;
+                if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin") || User.IsInRole("Member")) hasAccess = true;
 
                 if (!hasAccess) return View("AccessDenied", "Nội dung VIP.");
 

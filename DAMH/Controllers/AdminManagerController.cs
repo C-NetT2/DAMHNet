@@ -24,7 +24,11 @@ namespace DAMH.Controllers
             if (adminRole == null) return View(new List<ApplicationUser>());
 
             var admins = await _userManager.GetUsersInRoleAsync("Admin");
-            return View(admins.OrderBy(a => a.Email).ToList());
+            var superAdmins = await _userManager.GetUsersInRoleAsync("SuperAdmin");
+            
+            // Combine both Admin and SuperAdmin users
+            var allManageableUsers = admins.Concat(superAdmins).OrderBy(a => a.Email).ToList();
+            return View(allManageableUsers);
         }
 
         [HttpGet]
@@ -59,8 +63,10 @@ namespace DAMH.Controllers
             var result = await _userManager.CreateAsync(adminUser, model.Password);
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(adminUser, "Admin");
-                TempData["SuccessMessage"] = $"Đã tạo tài khoản Admin: {model.Email}";
+                // Assign role based on model selection
+                string roleToAssign = model.Role == "SuperAdmin" ? "SuperAdmin" : "Admin";
+                await _userManager.AddToRoleAsync(adminUser, roleToAssign);
+                TempData["SuccessMessage"] = $"Đã tạo tài khoản {roleToAssign}: {model.Email}";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -182,6 +188,9 @@ namespace DAMH.Controllers
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng chọn quyền")]
+        public string Role { get; set; } = "Admin";
     }
 
     public class EditAdminViewModel

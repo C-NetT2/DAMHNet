@@ -159,11 +159,115 @@
             }
         </div>
     </div>
+
+    <!-- Comment Section -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-info text-white fw-bold">
+            <i class="bi bi-chat-left-dots"></i> Bình luận về sách
+        </div>
+        <div class="card-body">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form id="commentForm" class="mb-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chia sẻ ý kiến của bạn</label>
+                        <textarea class="form-control" id="commentText" rows="3" 
+                                  placeholder="Nhập bình luận của bạn..." required></textarea>
+                        <small class="text-muted">Tối đa 500 ký tự</small>
+                    </div>
+                    <button type="button" class="btn btn-info text-white" onclick="submitComment(@Model.Book.BookId)">
+                        <i class="bi bi-send"></i> Gửi bình luận
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-info-circle"></i>
+                    <a asp-controller="Account" asp-action="Login" class="alert-link">Đăng nhập</a> để bình luận về sách này.
+                </div>
+            }
+
+            <!-- Comments List -->
+            <div id="commentsList" class="comments-list">
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-chat-left-dots fs-1 d-block mb-2"></i>
+                    <p>Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script>
+        function submitComment(bookId) {
+            var comment = $('#commentText').val().trim();
+            
+            if (!comment) {
+                alert('Vui lòng nhập bình luận');
+                return;
+            }
+
+            if (comment.length > 500) {
+                alert('Bình luận không được vượt quá 500 ký tự');
+                return;
+            }
+
+            $.ajax({
+                url: '/Review/SubmitComment',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ 
+                    bookId: bookId, 
+                    comment: comment 
+                }),
+                success: function(res) {
+                    if (res.success) {
+                        $('#commentText').val('');
+                        loadComments(bookId);
+                        alert('Bình luận đã được gửi!');
+                    } else {
+                        alert('Lỗi: ' + res.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi gửi bình luận');
+                }
+            });
+        }
+
+        function loadComments(bookId) {
+            $.ajax({
+                url: '/Review/GetComments?bookId=' + bookId,
+                type: 'GET',
+                success: function(data) {
+                    if (data && data.length > 0) {
+                        var html = '';
+                        $.each(data, function(idx, comment) {
+                            var createdDate = new Date(comment.createdDate);
+                            var dateStr = createdDate.toLocaleDateString('vi-VN') + ' ' + createdDate.toLocaleTimeString('vi-VN');
+                            
+                            html += '<div class="border-bottom pb-3 mb-3">';
+                            html += '<div class="d-flex justify-content-between align-items-start">';
+                            html += '<div>';
+                            html += '<strong class="text-primary">' + comment.userName + '</strong>';
+                            html += '<br><small class="text-muted">' + dateStr + '</small>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '<p class="mt-2 mb-0">' + comment.content + '</p>';
+                            html += '</div>';
+                        });
+                        $('#commentsList').html(html);
+                    }
+                }
+            });
+        }
+
         $(document).ready(function() {
+            var bookId = $('.book-detail-page').data('book-id');
+            loadComments(bookId);
+
             $('.star-btn').click(function() {
                 var val = $(this).data('val');
                 var bookId = $('.vote-area').data('book-id');

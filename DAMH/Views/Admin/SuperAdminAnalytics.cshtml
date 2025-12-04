@@ -1,0 +1,274 @@
+@{
+    ViewData["Title"] = "Thống kê SuperAdmin";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="text-danger fw-bold">
+            <i class="bi bi-graph-up-arrow"></i> Thống Kê Nâng Cao
+        </h2>
+        <small class="text-muted">Tháng @DateTime.Now.ToString("MM/yyyy")</small>
+    </div>
+
+    <!-- KPI Cards Row 1 -->
+    <div class="row mb-4">
+        <!-- Users Growth -->
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Người dùng mới tháng này</p>
+                            <h3 class="text-primary fw-bold">@ViewBag.NewUsersThisMonth</h3>
+                            <small class="text-muted">Tháng trước: @ViewBag.NewUsersLastMonth</small>
+                        </div>
+                        <i class="bi bi-people-fill fs-2 text-primary opacity-50"></i>
+                    </div>
+                    <div class="mt-3">
+                        @{
+                            var userPercent = (decimal?)ViewBag.UserGrowthPercent ?? 0;
+                            var userClass = userPercent >= 0 ? "text-success" : "text-danger";
+                        }
+                        <span class="badge @userClass">
+                            @if (userPercent >= 0)
+                            {
+                                <i class="bi bi-arrow-up"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-arrow-down"></i>
+                            }
+                            @Math.Abs(userPercent)%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Growth -->
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Doanh thu tháng này</p>
+                            <h3 class="text-success fw-bold">@ViewBag.RevenueThisMonth.ToString("N0")đ</h3>
+                            <small class="text-muted">Tháng trước: @ViewBag.RevenueLastMonth.ToString("N0")đ</small>
+                        </div>
+                        <i class="bi bi-cash-coin fs-2 text-success opacity-50"></i>
+                    </div>
+                    <div class="mt-3">
+                        @{
+                            var revenuePercent = (decimal?)ViewBag.RevenueGrowthPercent ?? 0;
+                            var revenueClass = revenuePercent >= 0 ? "text-success" : "text-danger";
+                        }
+                        <span class="badge @revenueClass">
+                            @if (revenuePercent >= 0)
+                            {
+                                <i class="bi bi-arrow-up"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-arrow-down"></i>
+                            }
+                            @Math.Abs(revenuePercent)%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIP Conversions -->
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Nâng cấp VIP tháng này</p>
+                            <h3 class="text-warning fw-bold">@ViewBag.VipThisMonth</h3>
+                            <small class="text-muted">Tháng trước: @ViewBag.VipLastMonth</small>
+                        </div>
+                        <i class="bi bi-crown-fill fs-2 text-warning opacity-50"></i>
+                    </div>
+                    <div class="mt-3">
+                        @{
+                            var vipPercent = (decimal?)ViewBag.VipGrowthPercent ?? 0;
+                            var vipClass = vipPercent >= 0 ? "text-success" : "text-danger";
+                        }
+                        <span class="badge @vipClass">
+                            @if (vipPercent >= 0)
+                            {
+                                <i class="bi bi-arrow-up"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-arrow-down"></i>
+                            }
+                            @Math.Abs(vipPercent)%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Daily VIP Conversions Chart -->
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0 fw-bold">Nâng cấp VIP theo ngày (tháng này)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hourly VIP Conversions Chart -->
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0 fw-bold">Nâng cấp VIP theo giờ (hôm nay)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="hourlyChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Package Distribution -->
+    <div class="row">
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0 fw-bold">Gói VIP được chọn nhiều nhất</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="packageChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Revenue Chart -->
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0 fw-bold">Doanh thu theo ngày (tháng này)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Parse data from ViewBag
+        var dailyLabels = @Html.Raw(ViewBag.DailyLabels);
+        var dailyCounts = @Html.Raw(ViewBag.DailyCounts);
+        var dailyRevenues = @Html.Raw(ViewBag.DailyRevenues);
+        var hourlyLabels = @Html.Raw(ViewBag.HourlyLabels);
+        var hourlyCounts = @Html.Raw(ViewBag.HourlyCounts);
+        var packageLabels = @Html.Raw(ViewBag.TopPackagesLabels);
+        var packageCounts = @Html.Raw(ViewBag.TopPackagesCounts);
+
+        // Daily Chart
+        var dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [
+                    {
+                        label: 'Số lượng nâng cấp',
+                        data: dailyCounts,
+                        borderColor: '#FFC107',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Hourly Chart
+        var hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+        new Chart(hourlyCtx, {
+            type: 'bar',
+            data: {
+                labels: hourlyLabels,
+                datasets: [{
+                    label: 'Nâng cấp VIP theo giờ',
+                    data: hourlyCounts,
+                    backgroundColor: '#17A2B8',
+                    borderColor: '#117A8B',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Package Chart
+        var packageCtx = document.getElementById('packageChart').getContext('2d');
+        new Chart(packageCtx, {
+            type: 'doughnut',
+            data: {
+                labels: packageLabels,
+                datasets: [{
+                    data: packageCounts,
+                    backgroundColor: [
+                        '#FFC107', '#28A745', '#DC3545', '#17A2B8', '#6F42C1'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // Revenue Chart
+        var revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Doanh thu (đ)',
+                    data: dailyRevenues,
+                    backgroundColor: '#28A745',
+                    borderColor: '#1E7E34',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    </script>
+}

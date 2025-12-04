@@ -10,7 +10,35 @@
         var currentUser = await UserManager.GetUserAsync(User);
         var userName = currentUser?.Email?.Split('@')[0] ?? "User";
 
-        if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+        if (User.IsInRole("SuperAdmin"))
+        {
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-danger fw-bold" href="#" id="superAdminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-shield-check"></i> Xin chào SuperAdmin
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="superAdminDropdown">
+                    <li>
+                        <a class="dropdown-item" asp-controller="AdminManager" asp-action="Index">
+                            <i class="bi bi-people-fill"></i> Quản lý Admin
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                            <i class="bi bi-speedometer2"></i> Bảng điều khiển
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        }
+        else if (User.IsInRole("Admin"))
         {
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -33,15 +61,97 @@
                 </ul>
             </li>
         }
+        else if (User.IsInRole("Member"))
+        {
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" id="memberDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-crown-fill text-warning"></i> Xin chào @userName - VIP
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="memberDropdown">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                            <i class="bi bi-person-badge"></i> Hồ sơ cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="VipPayment" asp-action="PaymentHistory">
+                            <i class="bi bi-receipt"></i> Lịch sử thanh toán
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="History">
+                            <i class="bi bi-clock-history"></i> Lịch sử xem
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Favorites" asp-action="Index">
+                            <i class="bi bi-heart-fill text-danger"></i> Yêu thích
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="VipPayment" asp-action="Index">
+                            <i class="bi bi-arrow-up-circle text-warning"></i> Gia hạn VIP
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        }
+        else if (currentUser?.IsMember == true && currentUser.SubscriptionExpiryDate > DateTime.Now)
+        {
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" id="memberDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-crown-fill text-warning"></i> Xin chào @userName - VIP
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="memberDropdown">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                            <i class="bi bi-person-badge"></i> Hồ sơ cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="VipPayment" asp-action="PaymentHistory">
+                            <i class="bi bi-receipt"></i> Lịch sử thanh toán
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="History">
+                            <i class="bi bi-clock-history"></i> Lịch sử xem
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Favorites" asp-action="Index">
+                            <i class="bi bi-heart-fill text-danger"></i> Yêu thích
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="VipPayment" asp-action="Index">
+                            <i class="bi bi-arrow-up-circle text-warning"></i> Gia hạn VIP
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        }
         else
         {
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-circle"></i> Xin chào @userName
-                    @if (currentUser?.IsMember == true)
-                    {
-                        <span class="badge bg-warning text-dark ms-1">VIP</span>
-                    }
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li>
@@ -57,6 +167,11 @@
                     <li>
                         <a class="dropdown-item" asp-controller="Favorites" asp-action="Index">
                             <i class="bi bi-heart-fill text-danger"></i> Yêu thích
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="VipPayment" asp-action="Index">
+                            <i class="bi bi-arrow-up-circle text-warning"></i> Nâng cấp VIP
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>

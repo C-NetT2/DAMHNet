@@ -17,14 +17,30 @@ namespace DAMH.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
+            const int pageSize = 30;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var favorites = await _context.Favorites
+            
+            var query = _context.Favorites
                 .Where(f => f.UserId == userId)
                 .Include(f => f.Book)
-                .OrderByDescending(f => f.DateAdded)
+                .OrderByDescending(f => f.DateAdded);
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (totalCount + pageSize - 1) / pageSize;
+
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            var favorites = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalCount;
 
             return View(favorites);
         }

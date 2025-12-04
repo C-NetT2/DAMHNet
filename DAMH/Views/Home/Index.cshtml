@@ -17,8 +17,8 @@
                     {
                         <div class="swiper-slide">
                             <div class="card h-100 shadow-sm border-0 book-card">
-                                <div class="position-relative">
-                                    <img src="@(book.CoverImageUrl ?? "/images/default-cover.jpg")" class="card-img-top" style="height: 250px; object-fit: cover;" alt="@book.Title">
+                                <div class="position-relative" style="background-color: #e9ecef; min-height: 250px;">
+                                    <img src="@(book.CoverImageUrl ?? "/images/default-cover.jpg")" class="card-img-top" style="height: 250px; object-fit: cover; background-color: #e9ecef;" onerror="this.src='/images/default-cover.jpg';" alt="@book.Title">
 
                                     @if (book.AccessLevel == AccessLevel.Premium)
                                     {
@@ -63,8 +63,8 @@
                     {
                         <div class="col">
                             <div class="card h-100 shadow-sm hover-effect">
-                                <div class="position-relative">
-                                    <img src="@(book.CoverImageUrl ?? "/images/default-cover.jpg")" class="card-img-top" style="height: 180px; object-fit: cover;" alt="@book.Title">
+                                <div class="position-relative" style="background-color: #e9ecef; min-height: 180px;">
+                                    <img src="@(book.CoverImageUrl ?? "/images/default-cover.jpg")" class="card-img-top" style="height: 180px; object-fit: cover; background-color: #e9ecef;" onerror="this.src='/images/default-cover.jpg';" alt="@book.Title">
                                     @if (book.AccessLevel == AccessLevel.Premium)
                                     {
                                         <span class="position-absolute top-0 start-0 badge bg-warning text-dark m-1 shadow-sm">VIP</span>
