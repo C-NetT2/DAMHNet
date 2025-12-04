@@ -10,7 +10,7 @@ namespace DAMH.Data
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            string[] roleNames = { "Admin", "Member", "User" };
+            string[] roleNames = { "Admin", "Member", "User", "SuperAdmin" };
             foreach (var roleName in roleNames)
             {
                 var roleExist = await roleManager.RoleExistsAsync(roleName);
@@ -39,6 +39,26 @@ namespace DAMH.Data
                     await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
             }
+            var superAdminEmail = "superadmin@library.com";
+            var superAdminPassword = "SuperAdmin123!";
+            var superAdmin = await userManager.FindByEmailAsync(superAdminEmail);
+            if (superAdmin == null)
+            {
+                superAdmin = new ApplicationUser
+                {
+                    UserName = superAdminEmail,
+                    Email = superAdminEmail,
+                    EmailConfirmed = true,
+                    IsMember = true,
+                    SubscriptionExpiryDate = DateTime.Now.AddYears(100)
+                };
+                var createResult = await userManager.CreateAsync(superAdmin, superAdminPassword);
+                if (createResult.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(superAdmin, "SuperAdmin");
+                }
+            }
+
             var testUserEmail = "user@library.com";
             var testUser = await userManager.FindByEmailAsync(testUserEmail);
 
@@ -49,10 +69,9 @@ namespace DAMH.Data
                     UserName = testUserEmail,
                     Email = testUserEmail,
                     EmailConfirmed = true,
-                    IsMember = false, // Không phải VIP
+                    IsMember = false, 
                     SubscriptionExpiryDate = null
                 };
-                // Mật khẩu là User123!
                 var testResult = await userManager.CreateAsync(testUser, "User123!");
                 if (testResult.Succeeded)
                 {
@@ -60,7 +79,6 @@ namespace DAMH.Data
                 }
             }
 
-            // 3. Tạo tài khoản Member VIP (Test Premium)
             var premiumUserEmail = "premium@library.com";
             var premiumUser = await userManager.FindByEmailAsync(premiumUserEmail);
 
@@ -71,10 +89,9 @@ namespace DAMH.Data
                     UserName = premiumUserEmail,
                     Email = premiumUserEmail,
                     EmailConfirmed = true,
-                    IsMember = true, // <--- QUAN TRỌNG: Là VIP
-                    SubscriptionExpiryDate = DateTime.Now.AddMonths(12) // Hạn 1 năm
+                    IsMember = true, 
+                    SubscriptionExpiryDate = DateTime.Now.AddMonths(12) 
                 };
-                // Mật khẩu là Premium123!
                 var premiumResult = await userManager.CreateAsync(premiumUser, "Premium123!");
                 if (premiumResult.Succeeded)
                 {

@@ -20,14 +20,12 @@ namespace DAMH.Models
 
         public DateTime? UpdatedDate { get; set; }
 
-        // Khóa ngoại
         [Required]
         public int BookId { get; set; }
 
         [Required]
         public string UserId { get; set; } = string.Empty;
 
-        // Quan hệ
         [ForeignKey(nameof(BookId))]
         public Book Book { get; set; } = null!;
 

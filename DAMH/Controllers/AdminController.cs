@@ -17,9 +17,6 @@ namespace DAMH.Controllers
             _context = context;
         }
 
-        // ==========================================
-        // 1. QUẢN LÝ SÁCH
-        // ==========================================
         public async Task<IActionResult> Index()
         {
             var books = await _context.Books.ToListAsync();
@@ -92,11 +89,6 @@ namespace DAMH.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ==========================================
-        // 2. QUẢN LÝ CHƯƠNG (CHAPTERS)
-        // ==========================================
-
-        // --- HÀM BẠN ĐANG THIẾU ---
         public async Task<IActionResult> ViewBookChapters(int bookId)
         {
             var book = await _context.Books
@@ -107,7 +99,6 @@ namespace DAMH.Controllers
 
             return View(book);
         }
-        // ---------------------------
 
         [HttpGet]
         public async Task<IActionResult> AddChapter(int bookId)

@@ -6,16 +6,15 @@ namespace DAMH.Models.ViewModels
     {
         [Required(ErrorMessage = "Vui lòng nhập Email")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Display(Name = "Ghi nhớ đăng nhập")]
         public bool RememberMe { get; set; }
 
-        // Lưu lại trang người dùng đang xem dở để chuyển hướng về đó sau khi login
         public string? ReturnUrl { get; set; }
     }
 }

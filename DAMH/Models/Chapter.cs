@@ -19,11 +19,9 @@ namespace DAMH.Models
         [Required]
         public bool IsFree { get; set; }
 
-        // Foreign key
         [Required]
         public int BookId { get; set; }
 
-        // Navigation property: A chapter belongs to one book
         [ForeignKey(nameof(BookId))]
         public Book Book { get; set; } = null!;
     }

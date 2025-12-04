@@ -30,17 +30,14 @@ namespace DAMH.Controllers
                 var book = chapter.Book;
                 var user = await _userManager.GetUserAsync(User);
 
-                // Kiểm tra quyền (VIP/Free)
                 bool hasAccess = false;
                 if (book.AccessLevel == AccessLevel.Free || chapter.IsFree == true) hasAccess = true;
                 else if (user != null && user.IsMember == true && (user.SubscriptionExpiryDate == null || user.SubscriptionExpiryDate > DateTime.Now)) hasAccess = true;
 
-                // Admin luôn được xem
                 if (User.IsInRole("Admin")) hasAccess = true;
 
                 if (!hasAccess) return View("AccessDenied", "Nội dung VIP.");
 
-                // Lưu lịch sử (chỉ user thường)
                 if (user != null && !User.IsInRole("Admin"))
                 {
                     var existingHistory = await _context.ReadingHistories.FirstOrDefaultAsync(rh => rh.UserId == user.Id && rh.BookId == book.BookId);
@@ -49,7 +46,6 @@ namespace DAMH.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // === LOGIC TÌM CHƯƠNG TRƯỚC / SAU ===
                 var allChapters = book.Chapters.OrderBy(c => c.ChapterOrder).ToList();
                 var currentIndex = allChapters.FindIndex(c => c.ChapterId == chapterId);
 
@@ -59,11 +55,10 @@ namespace DAMH.Controllers
                 if (currentIndex > 0) previousChapterId = allChapters[currentIndex - 1].ChapterId;
                 if (currentIndex < allChapters.Count - 1) nextChapterId = allChapters[currentIndex + 1].ChapterId;
 
-                // Truyền dữ liệu sang View
                 ViewBag.PreviousChapterId = previousChapterId;
                 ViewBag.NextChapterId = nextChapterId;
                 ViewBag.AllChapters = allChapters;
-                ViewBag.IsAdminView = isAdminView; // QUAN TRỌNG: Để biết đường quay về
+                ViewBag.IsAdminView = isAdminView; 
 
                 return View("Read", chapter);
             }

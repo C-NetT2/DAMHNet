@@ -4,56 +4,35 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Thư Viện Online</title>
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/DAMH.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-3">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-book-half"></i> THƯ VIỆN
                 </a>
-
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Trang chủ
+                            </a>
                         </li>
-
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-warning fw-bold" asp-area="" asp-controller="Admin" asp-action="Index">
-                                    <i class="bi bi-gear-fill"></i> Quản trị
-                                </a>
-                            </li>
-                        }
-
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-controller="Home" asp-action="History">
-                                    <i class="bi bi-clock-history"></i> Lịch sử xem
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-danger fw-bold" asp-controller="Favorites" asp-action="Index">
-                                    <i class="bi bi-heart-fill"></i> Yêu thích
-                                </a>
-                            </li>
-                        }
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="AllBooks">
+                                <i class="bi bi-collection"></i> Kho sách
+                            </a>
+                        </li>
                     </ul>
-
-                    <form asp-controller="Home" asp-action="Search" method="get" class="d-flex me-3" style="min-width: 400px;">
+                    <form asp-controller="Home" asp-action="Search" method="get" class="d-flex me-3 flex-fill" style="max-width: 500px;">
                         <div class="input-group">
                             <input type="text" name="Keyword" class="form-control" placeholder="Tìm sách, tác giả..." aria-label="Search">
                             <select name="Genre" class="form-select" style="max-width: 130px;" asp-items="Html.GetEnumSelectList<DAMH.Models.Genre>()">
@@ -64,48 +43,25 @@
                             </button>
                         </div>
                     </form>
-
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
-
-    <div class="container">
-        <main role="main" class="pb-3">
+    <main role="main" class="flex-fill pb-3">
+        <div class="container">
             @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted bg-light mt-5">
-        <div class="container text-center py-3">
-            &copy; 2024 - Thư Viện Online
+        </div>
+    </main>
+    <footer class="footer mt-auto py-3 bg-light border-top">
+        <div class="container text-center">
+            <span class="text-muted">&copy; 2024 - Thư Viện Online. Tất cả quyền được bảo lưu.</span>
         </div>
     </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
-    <script>
-        function toggleFavorite(bookId, button) {
-            $.post('/Favorites/Toggle', { bookId: bookId }, function(res) {
-                if(res.success) {
-                    var icon = $(button).find('i');
-                    if(res.isFavorited) {
-                        icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
-                        alert("Đã thêm vào yêu thích!");
-                    } else {
-                        icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
-                        alert("Đã xóa khỏi yêu thích!");
-                    }
-                } else {
-                    alert(res.message);
-                }
-            });
-        }
-    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

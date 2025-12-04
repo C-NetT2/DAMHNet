@@ -10,50 +10,115 @@
 </head>
 <body>
     <div class="d-flex" style="min-height: 100vh;">
-        <div class="bg-dark text-white p-3" style="width: 280px;">
-            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <span class="fs-4 fw-bold"><i class="bi bi-speedometer2"></i> Admin Panel</span>
+        <div class="admin-sidebar text-white p-3" style="width: 280px;">
+            <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
+                <span class="fs-4 fw-bold">
+                    <i class="bi bi-speedometer2"></i> Admin Panel
+                </span>
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a asp-controller="Admin" asp-action="Index" class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active bg-primary" : "")">
+                    <a asp-controller="Admin" asp-action="Index"
+                       class="nav-link text-white @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="bi bi-house-door me-2"></i> Bảng điều khiển
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Index"
+                       class="nav-link text-white @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && (ViewContext.RouteData.Values["Action"]?.ToString() == "Index" || ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Book") == true) ? "active" : "")">
                         <i class="bi bi-book me-2"></i> Quản lý Sách
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Admin" asp-action="ManageUsers" class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageUsers" ? "active bg-primary" : "")">
+                    <a asp-controller="Admin" asp-action="ManageUsers"
+                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageUsers" ? "active" : "")">
                         <i class="bi bi-people me-2"></i> Quản lý Người dùng
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Admin" asp-action="ManageReviews" class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageReviews" ? "active bg-primary" : "")">
+                    <a asp-controller="Admin" asp-action="ManageReviews"
+                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageReviews" ? "active" : "")">
                         <i class="bi bi-chat-left-quote me-2"></i> Quản lý Đánh giá
                     </a>
                 </li>
+                <li>
+                    <a asp-controller="Admin" asp-action="Analytics"
+                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "Analytics" ? "active" : "")">
+                        <i class="bi bi-graph-up me-2"></i> Thống kê
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Admin" asp-action="ManageFavorites"
+                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageFavorites" ? "active" : "")">
+                        <i class="bi bi-heart me-2"></i> Quản lý Yêu thích
+                    </a>
+                </li>
+                @if (User.IsInRole("SuperAdmin"))
+                {
+                    <li class="nav-item mt-3">
+                        <hr class="text-white-50">
+                        <small class="text-white-50 text-uppercase fw-bold">SuperAdmin Only</small>
+                    </li>
+                    <li>
+                        <a asp-controller="AdminManager" asp-action="Index"
+                           class="nav-link text-warning @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminManager" ? "active bg-warning text-dark" : "")">
+                            <i class="bi bi-shield-lock me-2"></i> Quản lý Admin
+                        </a>
+                    </li>
+                }
             </ul>
             <hr>
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <strong>Admin</strong>
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                   id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle me-2"></i>
+                    <strong>
+                        @if (User.IsInRole("SuperAdmin"))
+                        {
+                            <text>SuperAdmin</text>
+                        }
+                        else
+                        {
+                            <text>Admin</text>
+                        }
+                    </strong>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Về trang chủ</a></li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-house"></i> Về trang chủ
+                        </a>
+                    </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
-                            <button type="submit" class="dropdown-item">Đăng xuất</button>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
                         </form>
                     </li>
                 </ul>
             </div>
         </div>
-
         <div class="flex-grow-1 p-4 bg-light">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
             @RenderBody()
         </div>
     </div>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

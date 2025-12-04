@@ -43,18 +43,31 @@ namespace DAMH.Controllers
             switch (rankBy.ToLower())
             {
                 case "views":
-                    topRatedBooks = await _context.Books.OrderByDescending(b => b.TotalViews).Take(10).ToListAsync();
+                    topRatedBooks = await _context.Books
+                        .OrderByDescending(b => b.TotalViews)
+                        .Take(10)
+                        .ToListAsync();
                     break;
                 case "favorites":
                     topRatedBooks = await _context.Books
-                        .Select(b => new { Book = b, FavCount = _context.Favorites.Count(f => f.BookId == b.BookId) })
-                        .OrderByDescending(x => x.FavCount).Take(10).Select(x => x.Book).ToListAsync();
+                        .Select(b => new
+                        {
+                            Book = b,
+                            FavCount = _context.Favorites.Count(f => f.BookId == b.BookId)
+                        })
+                        .Where(x => x.FavCount > 0)
+                        .OrderByDescending(x => x.FavCount)
+                        .Take(10)
+                        .Select(x => x.Book)
+                        .ToListAsync();
                     break;
                 default:
                     topRatedBooks = await _context.Books
+                        .Include(b => b.Reviews)
                         .Where(b => b.Reviews.Any())
                         .OrderByDescending(b => b.Reviews.Average(r => r.Rating))
-                        .Take(10).ToListAsync();
+                        .Take(10)
+                        .ToListAsync();
                     break;
             }
 
