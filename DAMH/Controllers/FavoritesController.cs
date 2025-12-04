@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace DAMH.Controllers
 {
-    [Authorize] // Phải đăng nhập
+    [Authorize] 
     public class FavoritesController : Controller
     {
         private readonly LibraryContext _context;
@@ -17,7 +17,6 @@ namespace DAMH.Controllers
             _context = context;
         }
 
-        // 1. TRANG DANH SÁCH YÊU THÍCH
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -30,7 +29,6 @@ namespace DAMH.Controllers
             return View(favorites);
         }
 
-        // 2. TOGGLE YÊU THÍCH (AJAX)
         [HttpPost]
         public async Task<IActionResult> Toggle(int bookId)
         {
@@ -63,7 +61,6 @@ namespace DAMH.Controllers
             });
         }
 
-        // 3. KIỂM TRA TRẠNG THÁI (AJAX)
         [HttpGet]
         public async Task<IActionResult> CheckStatus(int bookId)
         {
@@ -76,7 +73,6 @@ namespace DAMH.Controllers
             return Json(new { isFavorited = isFavorited });
         }
 
-        // 4. XÓA KHỎI DANH SÁCH (Nút xóa trực tiếp)
         [HttpPost]
         public async Task<IActionResult> Remove(int id)
         {
@@ -89,6 +85,20 @@ namespace DAMH.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetCount()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Json(new { count = 0 });
+
+            var count = await _context.Favorites
+                .Where(f => f.UserId == userId)
+                .CountAsync();
+
+            return Json(new { count });
         }
     }
 }

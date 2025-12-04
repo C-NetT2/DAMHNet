@@ -2,17 +2,14 @@
 {
     public class AdminAnalyticsViewModel
     {
-        // Tổng quan
         public int TotalUsers { get; set; }
         public int TotalBooks { get; set; }
         public int TotalFavorites { get; set; }
         public int TotalReadings { get; set; }
 
-        // Thống kê sở thích
         public List<GenreStatistic> FavoriteGenreStats { get; set; } = new();
         public List<GenreStatistic> ReadingGenreStats { get; set; } = new();
 
-        // Top sách
         public List<BookStatistic> MostFavoritedBooks { get; set; } = new();
         public List<BookStatistic> MostReadBooks { get; set; } = new();
     }

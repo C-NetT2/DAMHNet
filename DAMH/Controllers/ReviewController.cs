@@ -7,7 +7,7 @@ using DAMH.Models.ViewModels;
 
 namespace DAMH.Controllers
 {
-    [Authorize] // Phải đăng nhập mới được vote
+    [Authorize] 
     public class ReviewController : Controller
     {
         private readonly LibraryContext _context;
@@ -49,7 +49,6 @@ namespace DAMH.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Tính lại điểm trung bình để trả về giao diện
             var averageRating = await _context.Reviews.Where(r => r.BookId == model.BookId).AverageAsync(r => r.Rating);
             var totalReviews = await _context.Reviews.CountAsync(r => r.BookId == model.BookId);
 
