@@ -2,37 +2,300 @@
 @{
     ViewData["Title"] = "Quản lý Đánh giá";
     Layout = "_AdminLayout";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalReviews = ViewBag.TotalReviews ?? 0;
+    var searchTerm = ViewBag.SearchTerm ?? "";
+    var rating = ViewBag.Rating as int?;
+    var startDate = ViewBag.StartDate as DateTime?;
+    var endDate = ViewBag.EndDate as DateTime?;
+    var sortBy = ViewBag.SortBy ?? "newest";
 }
 
-<h2 class="mb-4">Quản Lý Đánh Giá & Bình Luận</h2>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-info">
+            <i class="bi bi-chat-left-quote-fill"></i> Quản Lý Đánh Giá & Bình Luận
+            <span class="badge bg-secondary">@totalReviews đánh giá</span>
+        </h2>
+    </div>
 
-<table class="table table-bordered table-hover bg-white">
-    <thead class="table-dark">
-        <tr>
-            <th>Người dùng</th>
-            <th>Sách</th>
-            <th>Sao</th>
-            <th>Bình luận</th>
-            <th>Ngày</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel-fill"></i> Bộ Lọc Nâng Cao
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="ManageReviews" method="get">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </label>
+                        <input type="text" name="searchTerm" class="form-control"
+                               value="@searchTerm" placeholder="Tên sách, người dùng, nội dung...">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-star-fill text-warning"></i> Đánh giá
+                        </label>
+                        <select name="rating" class="form-select">
+                            <option value="">Tất cả</option>
+                            <option value="5" selected="@(rating == 5)">⭐⭐⭐⭐⭐ (5 sao)</option>
+                            <option value="4" selected="@(rating == 4)">⭐⭐⭐⭐ (4 sao)</option>
+                            <option value="3" selected="@(rating == 3)">⭐⭐⭐ (3 sao)</option>
+                            <option value="2" selected="@(rating == 2)">⭐⭐ (2 sao)</option>
+                            <option value="1" selected="@(rating == 1)">⭐ (1 sao)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-range"></i> Từ ngày
+                        </label>
+                        <input type="date" name="startDate" class="form-control"
+                               value="@(startDate?.ToString("yyyy-MM-dd"))">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Đến ngày</label>
+                        <input type="date" name="endDate" class="form-control"
+                               value="@(endDate?.ToString("yyyy-MM-dd"))">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-sort-down"></i> Sắp xếp
+                        </label>
+                        <select name="sortBy" class="form-select">
+                            <option value="newest" selected="@(sortBy == "newest")">Mới nhất</option>
+                            <option value="oldest" selected="@(sortBy == "oldest")">Cũ nhất</option>
+                            <option value="rating_high" selected="@(sortBy == "rating_high")">Đánh giá cao</option>
+                            <option value="rating_low" selected="@(sortBy == "rating_low")">Đánh giá thấp</option>
+                            <option value="name_az" selected="@(sortBy == "name_az")">Tên A-Z</option>
+                            <option value="name_za" selected="@(sortBy == "name_za")">Tên Z-A</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-info text-white w-100">
+                            <i class="bi bi-search"></i> Áp dụng bộ lọc
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <a asp-action="ManageReviews" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    @if (!string.IsNullOrEmpty(searchTerm) || rating.HasValue || startDate.HasValue || endDate.HasValue)
+    {
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <i class="bi bi-info-circle-fill"></i>
+                <strong>Bộ lọc đang áp dụng:</strong>
+                @if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    <span class="badge bg-primary ms-2">Từ khóa: @searchTerm</span>
+                }
+                @if (rating.HasValue)
+                {
+                    <span class="badge bg-warning text-dark ms-2">@rating sao</span>
+                }
+                @if (startDate.HasValue || endDate.HasValue)
+                {
+                    <span class="badge bg-success ms-2">
+                        @(startDate?.ToString("dd/MM/yyyy") ?? "...") - @(endDate?.ToString("dd/MM/yyyy") ?? "...")
+                    </span>
+                }
+            </div>
+            <a asp-action="ManageReviews" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-x"></i> Xóa
+            </a>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 20%">Người dùng</th>
+                                <th style="width: 20%">Sách</th>
+                                <th style="width: 8%">Đánh giá</th>
+                                <th style="width: 32%">Bình luận</th>
+                                <th style="width: 10%">Ngày</th>
+                                <th style="width: 15%" class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowNumber = (currentPage - 1) * 30 + 1;
+                            }
+                            @foreach (var review in Model)
+                            {
+                                <tr>
+                                    <td>@rowNumber</td>
+                                    <td>
+                                        <i class="bi bi-person-circle text-primary"></i>
+                                        <small>@review.User.Email</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 200px;" title="@review.Book.Title">
+                                            <i class="bi bi-book"></i> @review.Book.Title
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-warning fw-bold fs-5">
+                                            @for (int i = 1; i <= review.Rating; i++)
+                                            {
+                                                <i class="bi bi-star-fill"></i>
+                                            }
+                                        </span>
+                                        <div><small class="text-muted">@review.Rating/5</small></div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(review.Comment))
+                                        {
+                                            <div class="text-truncate" style="max-width: 300px;" title="@review.Comment">
+                                                @review.Comment
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <em class="text-muted">Không có bình luận</em>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            @review.CreatedDate.ToString("dd/MM/yyyy")
+                                            <br>@review.CreatedDate.ToString("HH:mm")
+                                        </small>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="EditReview" asp-route-id="@review.ReviewId"
+                                               class="btn btn-sm btn-warning" title="Sửa">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <form asp-action="DeleteReview" asp-route-id="@review.ReviewId"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                rowNumber++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @if (totalPages > 1)
         {
-            <tr>
-                <td>@item.User.Email</td>
-                <td>@item.Book.Title</td>
-                <td><span class="text-warning fw-bold">@item.Rating</span></td>
-                <td>@item.Comment</td>
-                <td>@item.CreatedDate.ToString("dd/MM/yyyy")</td>
-                <td>
-                    <a asp-action="EditReview" asp-route-id="@item.ReviewId" class="btn btn-sm btn-warning">Sửa</a>
-                    <form asp-action="DeleteReview" asp-route-id="@item.ReviewId" method="post" class="d-inline" onsubmit="return confirm('Xóa đánh giá này?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                    </form>
-                </td>
-            </tr>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="ManageReviews"
+                           asp-route-page="@(currentPage - 1)"
+                           asp-route-searchTerm="@searchTerm"
+                           asp-route-rating="@rating"
+                           asp-route-startDate="@startDate"
+                           asp-route-endDate="@endDate"
+                           asp-route-sortBy="@sortBy">
+                            <i class="bi bi-chevron-left"></i> Trước
+                        </a>
+                    </li>
+
+                    @{
+                        int startPage = Math.Max(1, currentPage - 2);
+                        int endPage = Math.Min(totalPages, currentPage + 2);
+                    }
+
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="ManageReviews" asp-route-page="1"
+                               asp-route-searchTerm="@searchTerm" asp-route-rating="@rating"
+                               asp-route-startDate="@startDate" asp-route-endDate="@endDate"
+                               asp-route-sortBy="@sortBy">1</a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" asp-action="ManageReviews" asp-route-page="@i"
+                               asp-route-searchTerm="@searchTerm" asp-route-rating="@rating"
+                               asp-route-startDate="@startDate" asp-route-endDate="@endDate"
+                               asp-route-sortBy="@sortBy">@i</a>
+                        </li>
+                    }
+
+                    @if (endPage < totalPages)
+                    {
+                        @if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" asp-action="ManageReviews" asp-route-page="@totalPages"
+                               asp-route-searchTerm="@searchTerm" asp-route-rating="@rating"
+                               asp-route-startDate="@startDate" asp-route-endDate="@endDate"
+                               asp-route-sortBy="@sortBy">@totalPages</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="ManageReviews"
+                           asp-route-page="@(currentPage + 1)"
+                           asp-route-searchTerm="@searchTerm"
+                           asp-route-rating="@rating"
+                           asp-route-startDate="@startDate"
+                           asp-route-endDate="@endDate"
+                           asp-route-sortBy="@sortBy">
+                            Sau <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="text-center text-muted mb-4">
+                Trang @currentPage / @totalPages (Tổng @totalReviews đánh giá)
+            </div>
         }
-    </tbody>
-</table>
+    }
+    else
+    {
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle display-1"></i>
+            <h4 class="mt-3">Không tìm thấy đánh giá nào</h4>
+            @if (!string.IsNullOrEmpty(searchTerm) || rating.HasValue || startDate.HasValue || endDate.HasValue)
+            {
+                <p>Không có kết quả phù hợp với bộ lọc hiện tại</p>
+                <a asp-action="ManageReviews" class="btn btn-info text-white mt-2">Xem tất cả đánh giá</a>
+            }
+        </div>
+    }
+</div>

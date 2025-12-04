@@ -61,6 +61,12 @@
                         <small class="text-white-50 text-uppercase fw-bold">SuperAdmin Only</small>
                     </li>
                     <li>
+                        <a asp-controller="Admin" asp-action="SuperAdminAnalytics"
+                           class="nav-link text-danger @(ViewContext.RouteData.Values["Action"]?.ToString() == "SuperAdminAnalytics" ? "active bg-danger" : "")">
+                            <i class="bi bi-graph-up-arrow me-2"></i> Thống kê Nâng cao
+                        </a>
+                    </li>
+                    <li>
                         <a asp-controller="AdminManager" asp-action="Index"
                            class="nav-link text-warning @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminManager" ? "active bg-warning text-dark" : "")">
                             <i class="bi bi-shield-lock me-2"></i> Quản lý Admin

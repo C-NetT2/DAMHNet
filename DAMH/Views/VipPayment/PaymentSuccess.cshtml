@@ -1,0 +1,89 @@
+﻿@using DAMH.Models
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+    var transaction = ViewBag.Transaction as PaymentTransaction;
+    var user = ViewBag.User as ApplicationUser;
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+
+                    <h1 class="text-success mb-3">Thanh Toán Thành Công!</h1>
+                    <p class="lead text-muted mb-4">
+                        Tài khoản VIP của bạn đã được kích hoạt thành công
+                    </p>
+
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-receipt"></i> Thông Tin Giao Dịch
+                            </h5>
+                            <div class="row text-start">
+                                <div class="col-6 mb-3">
+                                    <small class="text-muted d-block">Mã giao dịch</small>
+                                    <strong>#@transaction.TransactionId</strong>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <small class="text-muted d-block">Thời gian</small>
+                                    <strong>@transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <small class="text-muted d-block">Gói đã mua</small>
+                                    <strong class="text-warning">
+                                        <i class="bi bi-crown-fill"></i> @transaction.PackageType.GetName()
+                                    </strong>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <small class="text-muted d-block">Số tiền</small>
+                                    <strong class="text-success">@transaction.Amount.ToString("N0")₫</strong>
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted d-block">Hạn sử dụng VIP</small>
+                                    @if (user?.SubscriptionExpiryDate > DateTime.Now.AddYears(50))
+                                    {
+                                        <h4 class="text-dark mb-0">
+                                            <i class="bi bi-infinity"></i> TRỌN ĐỜI
+                                        </h4>
+                                    }
+                                    else
+                                    {
+                                        <h4 class="text-primary mb-0">
+                                            @user?.SubscriptionExpiryDate?.ToString("dd/MM/yyyy HH:mm")
+                                        </h4>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success mb-4">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Chúc mừng!</strong> Bạn đã có thể truy cập toàn bộ nội dung VIP.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="bi bi-house-door"></i> Về Trang Chủ
+                        </a>
+                        <a asp-controller="VipPayment" asp-action="PaymentHistory" class="btn btn-outline-secondary">
+                            <i class="bi bi-clock-history"></i> Xem Lịch Sử Giao Dịch
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="bi bi-shield-check"></i>
+                    Giao dịch được bảo mật bởi hệ thống thanh toán an toàn
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

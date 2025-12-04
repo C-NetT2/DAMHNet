@@ -26,11 +26,11 @@
                                 <i class="bi bi-house-door"></i> Trang chủ
                             </a>
                         </li>
-                        <li class="nav-item">
+                            <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="AllBooks">
                                 <i class="bi bi-collection"></i> Kho sách
-                            </a>
-                        </li>
+                                </a>
+                            </li>
                     </ul>
                     <form asp-controller="Home" asp-action="Search" method="get" class="d-flex me-3 flex-fill" style="max-width: 500px;">
                         <div class="input-group">
@@ -49,10 +49,10 @@
         </nav>
     </header>
     <main role="main" class="flex-fill pb-3">
-        <div class="container">
+    <div class="container">
             @RenderBody()
         </div>
-    </main>
+        </main>
     <footer class="footer mt-auto py-3 bg-light border-top">
         <div class="container text-center">
             <span class="text-muted">&copy; 2024 - Thư Viện Online. Tất cả quyền được bảo lưu.</span>

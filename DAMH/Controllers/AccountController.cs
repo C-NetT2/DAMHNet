@@ -99,6 +99,16 @@ namespace DAMH.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
+                // Gán role "Member" nếu đăng ký VIP
+                if (model.IsMember)
+                {
+                    await _userManager.AddToRoleAsync(user, "Member");
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(user, "User");
+                }
+                
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 TempData["SuccessMessage"] = "Đăng ký thành công!";
                 return RedirectToAction("Index", "Home");

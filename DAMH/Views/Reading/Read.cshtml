@@ -68,9 +68,20 @@
                 </div>
 
                 <div class="col-auto ms-auto">
-                    <button class="btn btn-outline-danger" onclick="alert('Đã thêm vào yêu thích!')">
-                        <i class="bi bi-heart"></i> Yêu thích
-                    </button>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button class="btn btn-outline-danger favorite-btn"
+                                data-book-id="@Model.BookId"
+                                onclick="toggleFavorite(@Model.BookId, this)">
+                            <i class="bi bi-heart"></i> Yêu thích
+                        </button>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">
+                            <i class="bi bi-heart"></i> Yêu thích
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -94,3 +105,61 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            checkFavoriteStatus();
+        });
+
+        function checkFavoriteStatus() {
+            var bookId = $('.favorite-btn').data('book-id');
+            if (!bookId) return;
+
+            $.get('/Favorites/CheckStatus', { bookId: bookId }, function(response) {
+                var btn = $('.favorite-btn[data-book-id="' + bookId + '"]');
+                if (response.isFavorited) {
+                    btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                    btn.find('i').removeClass('bi-heart').addClass('bi-heart-fill');
+                } else {
+                    btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                    btn.find('i').removeClass('bi-heart-fill').addClass('bi-heart');
+                }
+            });
+        }
+
+        function toggleFavorite(bookId, button) {
+            $.post('/Favorites/Toggle', { bookId: bookId }, function(response) {
+                if (response.success) {
+                    var btn = $(button);
+                    if (response.isFavorited) {
+                        btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                        btn.find('i').removeClass('bi-heart').addClass('bi-heart-fill');
+                    } else {
+                        btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                        btn.find('i').removeClass('bi-heart-fill').addClass('bi-heart');
+                    }
+
+                    showNotification(response.message, 'success');
+                } else {
+                    showNotification(response.message, 'error');
+                }
+            }).fail(function() {
+                showNotification('Có lỗi xảy ra. Vui lòng thử lại!', 'error');
+            });
+        }
+
+        function showNotification(message, type) {
+            var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            var notification = $('<div class="alert ' + alertClass + ' alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;" role="alert">' +
+                message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+
+            $('body').append(notification);
+            setTimeout(function() {
+                notification.alert('close');
+            }, 3000);
+        }
+    </script>
+}
