@@ -20,65 +20,60 @@
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
                     <a asp-controller="Admin" asp-action="Index"
-                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
                         <i class="bi bi-book me-2"></i> Quản lý Sách
                     </a>
                 </li>
 
                 <li class="nav-item">
                     <a asp-controller="Admin" asp-action="ManageBookAssets"
-                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Asset") == true || ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Cover") == true || ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Media") == true ? "active" : "")">
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Asset") == true || ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Cover") == true || ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Media") == true ? "active" : "")">
                         <i class="bi bi-images me-2"></i> Tài nguyên Sách
                     </a>
                 </li>
 
                 <li>
                     <a asp-controller="Admin" asp-action="ManageUsers"
-                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageUsers" || ViewContext.RouteData.Values["Action"]?.ToString() == "EditUser" ? "active" : "")">
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageUsers" || ViewContext.RouteData.Values["Action"]?.ToString() == "EditUser" ? "active" : "")">
                         <i class="bi bi-people me-2"></i> Quản lý Người dùng
                     </a>
                 </li>
 
                 <li>
                     <a asp-controller="Admin" asp-action="ManageReviews"
-                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageReviews" ? "active" : "")">
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageReviews" ? "active" : "")">
                         <i class="bi bi-chat-left-quote me-2"></i> Quản lý Đánh giá
                     </a>
                 </li>
 
                 <li>
                     <a asp-controller="Admin" asp-action="Analytics"
-                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "Analytics" ? "active" : "")">
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Analytics" ? "active" : "")">
                         <i class="bi bi-graph-up me-2"></i> Phân tích
                     </a>
                 </li>
 
                 <li>
                     <a asp-controller="Admin" asp-action="ManageFavorites"
-                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageFavorites" ? "active" : "")">
+                       class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageFavorites" ? "active" : "")">
                         <i class="bi bi-heart me-2"></i> Quản lý Yêu thích
                     </a>
                 </li>
 
                 @if (User.IsInRole("SuperAdmin"))
                 {
-                    <li class="nav-item mt-3">
-                        <hr class="text-white-50">
-                        <small class="text-white-50 text-uppercase fw-bold ps-3">
-                            <i class="bi bi-shield-fill-check"></i> SuperAdmin
+                    <li class="nav-item superadmin-section">
+                        <small class="text-white text-uppercase d-block mb-2">
+                            <i class="bi bi-shield-fill-check"></i> SuperAdmin Tools
                         </small>
-                    </li>
 
-                    <li>
                         <a asp-controller="Admin" asp-action="SuperAdminAnalytics"
-                           class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "SuperAdminAnalytics" ? "active bg-danger text-white" : "text-danger")">
+                           class="nav-link superadmin-analytics mb-2 @(ViewContext.RouteData.Values["Action"]?.ToString() == "SuperAdminAnalytics" ? "active" : "")">
                             <i class="bi bi-graph-up-arrow me-2"></i> Phân tích Nâng cao
                         </a>
-                    </li>
 
-                    <li>
                         <a asp-controller="AdminManager" asp-action="Index"
-                           class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminManager" ? "active bg-warning text-dark" : "text-warning")">
+                           class="nav-link superadmin-manage @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminManager" ? "active" : "")">
                             <i class="bi bi-shield-lock me-2"></i> Quản lý Admin
                         </a>
                     </li>
@@ -88,22 +83,37 @@
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                    id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-person-circle me-2"></i>
-                    <strong>
-                        @if (User.IsInRole("SuperAdmin"))
+                    <i class="bi bi-person-circle me-2 fs-4"></i>
+                    <div class="d-flex flex-column">
+                        <strong>
+                            @if (User.IsInRole("SuperAdmin"))
+                            {
+                                <span>SuperAdmin</span>
+                            }
+                            else
+                            {
+                                <span>Admin</span>
+                            }
+                        </strong>
+                        @if (User.Identity?.Name != null)
                         {
-                            <text>SuperAdmin</text>
+                            <small class="opacity-75">@User.Identity.Name</small>
                         }
-                        else
-                        {
-                            <text>Admin</text>
-                        }
-                    </strong>
+                    </div>
+                    @if (User.IsInRole("SuperAdmin"))
+                    {
+                        <span class="badge bg-danger ms-2">SA</span>
+                    }
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                     <li>
                         <a class="dropdown-item" asp-controller="Home" asp-action="Index">
                             <i class="bi bi-house"></i> Về trang chủ
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                            <i class="bi bi-person-badge"></i> Hồ sơ cá nhân
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
@@ -139,6 +149,11 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

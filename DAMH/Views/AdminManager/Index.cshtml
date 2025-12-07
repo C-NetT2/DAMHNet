@@ -21,58 +21,167 @@
     @if (Model.Any())
     {
         <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient text-white">
+                <h5 class="mb-0 text-white">
+                    <i class="bi bi-people-fill text-white"></i> Danh sách Admin & SuperAdmin
+                </h5>
+            </div>
             <div class="card-body p-0">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th style="width: 35%">Email</th>
-                            <th style="width: 20%">Quyền</th>
-                            <th style="width: 25%">Họ tên</th>
-                            <th style="width: 15%">Ngày tạo</th>
-                            <th style="width: 15%" class="text-end">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var admin in Model)
-                        {
-                            var roles = await UserManager.GetRolesAsync(admin);
-                            var role = roles.FirstOrDefault() ?? "User";
-                            var roleBadge = role == "SuperAdmin" ? "bg-danger" : "bg-warning";
-                            
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
                             <tr>
-                                <td>
-                                    <i class="bi bi-person-badge text-primary"></i>
-                                    <strong>@admin.Email</strong>
-                                </td>
-                                <td>
-                                    <span class="badge @roleBadge">@role</span>
-                                </td>
-                                <td>@(admin.FullName ?? "Chưa cập nhật")</td>
-                                <td>
-                                    <small class="text-muted">
-                                        @admin.RegistrationDate.ToString("dd/MM/yyyy HH:mm")
-                                    </small>
-                                </td>
-                                <td class="text-end">
-                                    <div class="btn-group" role="group">
-                                        <a asp-action="EditAdmin" asp-route-id="@admin.Id"
-                                           class="btn btn-sm btn-warning">
-                                            <i class="bi bi-pencil-square"></i> Sửa
-                                        </a>
-                                        <form asp-action="DeleteAdmin" asp-route-id="@admin.Id"
-                                              method="post" class="d-inline"
-                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa Admin này?');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i> Xóa
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
+                                <th style="width: 5%" class="text-center">#</th>
+                                <th style="width: 30%">
+                                    <i class="bi bi-envelope"></i> Email
+                                </th>
+                                <th style="width: 15%">
+                                    <i class="bi bi-shield"></i> Quyền
+                                </th>
+                                <th style="width: 20%">
+                                    <i class="bi bi-person"></i> Họ tên
+                                </th>
+                                <th style="width: 15%">
+                                    <i class="bi bi-calendar"></i> Ngày tạo
+                                </th>
+                                <th style="width: 15%" class="text-end pe-3">
+                                    <i class="bi bi-gear"></i> Hành động
+                                </th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowNumber = 1;
+                            }
+                            @foreach (var admin in Model)
+                            {
+                                var roles = await UserManager.GetRolesAsync(admin);
+                                var role = roles.FirstOrDefault() ?? "User";
+                                var roleBadge = role == "SuperAdmin" ? "bg-danger" : "bg-warning";
+                                var roleIcon = role == "SuperAdmin" ? "shield-fill-check" : "shield-fill";
+
+                                <tr>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">@rowNumber</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-badge text-primary me-2"></i>
+                                            <strong>@admin.Email</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge @roleBadge shadow-sm">
+                                            <i class="bi bi-@roleIcon"></i> @role
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(admin.FullName))
+                                        {
+                                            <span>@admin.FullName</span>
+                                        }
+                                        else
+                                        {
+                                            <em class="text-muted">Chưa cập nhật</em>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i>
+                                            @admin.RegistrationDate.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a asp-action="EditAdmin" asp-route-id="@admin.Id"
+                                               class="btn btn-sm btn-warning"
+                                               title="Chỉnh sửa">
+                                                <i class="bi bi-pencil-square"></i> Sửa
+                                            </a>
+
+                                            @if (role != "SuperAdmin")
+                                            {
+                                                <form asp-action="DeleteAdmin" asp-route-id="@admin.Id"
+                                                      method="post" class="d-inline"
+                                                      onsubmit="return confirm('⚠️ CẢNH BÁO\n\nBạn có chắc chắn muốn xóa Admin @admin.Email không?\n\nHành động này không thể hoàn tác!');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-danger"
+                                                            title="Xóa">
+                                                        <i class="bi bi-trash"></i> Xóa
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-secondary" disabled
+                                                        title="Không thể xóa SuperAdmin">
+                                                    <i class="bi bi-lock-fill"></i> Khóa
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                rowNumber++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light border-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        <i class="bi bi-info-circle"></i>
+                        Tổng cộng: <strong>@Model.Count()</strong> tài khoản quản trị
+                    </div>
+                    <div>
+                        <a asp-action="CreateAdmin" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-circle"></i> Tạo Admin mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light mt-4">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-info-circle-fill text-primary"></i>
+                    Lưu ý về quản lý Admin
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                SuperAdmin có toàn quyền quản trị hệ thống
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                SuperAdmin không thể bị xóa từ giao diện
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-warning"></i>
+                                Chỉ có thể tạo tài khoản Admin thông thường
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-shield-fill text-primary"></i>
+                                Admin có quyền quản lý sách, người dùng, đánh giá
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                Admin không thể tạo/xóa Admin khác
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                Admin không xem được phân tích nâng cao
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     }
@@ -86,3 +195,17 @@
     }
 </div>
 
+<style>
+    .bg-gradient {
+        background: linear-gradient(135deg, #ffa502 0%, #ff7f00 100%) !important;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table tbody tr:hover {
+            background-color: rgba(255, 165, 2, 0.05);
+            transform: translateX(2px);
+        }
+</style>
