@@ -1,8 +1,8 @@
-/* Add this to wwwroot/css/site.css */
-
-/* ===== STICKY FOOTER FIX ===== */
 html, body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -13,83 +13,294 @@ body {
 
 main {
     flex: 1 0 auto;
-    min-height: calc(100vh - 200px);
 }
 
 .footer {
     flex-shrink: 0;
-    padding: 1rem 0; 
-    margin-top: auto;
-    background-color: #f8f9fa;
-}
-.book-cover {
-    background-color: #e9ecef;
-    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 100%;
 }
 
-.book-cover-placeholder {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+/* Admin Layout */
+.admin-layout-wrapper {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-}
-
-img.card-img-top {
-    min-height: 180px;
-    object-fit: cover;
-    background-color: #e9ecef;
-}
-
-.admin-sidebar {
-    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
     min-height: 100vh;
-    position: sticky;
+}
+
+/* Admin Sidebar */
+.admin-sidebar {
+    background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+    width: 280px;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
     top: 0;
     overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
 
     .admin-sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.75rem 1rem;
         border-radius: 5px;
-        margin-bottom: 5px;
+        margin-bottom: 0.25rem;
         transition: all 0.3s;
     }
 
         .admin-sidebar .nav-link:hover {
             background-color: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
+            color: white;
         }
 
         .admin-sidebar .nav-link.active {
             background-color: rgba(255, 255, 255, 0.2);
-            font-weight: bold;
+            color: white;
+            font-weight: 600;
         }
 
-.books-grid {
-    --bs-gutter-x: 1rem;
+/* Admin Content Area */
+.admin-content-wrapper {
+    flex: 1;
+    margin-left: 280px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding: 2rem;
+    width: calc(100% - 280px);
 }
 
-@media (min-width: 1400px) {
-    .books-grid.row-cols-xxl-6 > * {
-        flex: 0 0 auto;
-        width: 16.666667%;
+/* Button Group Spacing */
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
     }
+
+.btn-group-vertical .btn {
+    margin-bottom: 2px;
 }
 
-@media (min-width: 1200px) and (max-width: 1399px) {
-    .books-grid.row-cols-xl-5 > * {
-        flex: 0 0 auto;
-        width: 20%;
+    .btn-group-vertical .btn:last-child {
+        margin-bottom: 0;
     }
+
+/* Action Buttons Spacing */
+.action-buttons .btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
 }
 
+    .action-buttons .btn:last-child {
+        margin-right: 0;
+    }
+
+/* Table Action Buttons */
+td .btn-group {
+    display: flex;
+    gap: 4px;
+}
+
+td .d-inline {
+    display: inline-block !important;
+    margin-left: 4px;
+}
+
+/* Pagination Center */
+.pagination {
+    justify-content: center !important;
+    margin: 2rem 0;
+}
+
+/* Filter Cards */
+.filter-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+    .filter-card .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem 1.25rem;
+        border-radius: 8px 8px 0 0;
+    }
+
+/* Profile Page Styling */
+.profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    border-radius: 0 0 20px 20px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: white;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #667eea;
+    margin-bottom: 1rem;
+}
+
+.vip-badge {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+/* Responsive Admin */
 @media (max-width: 768px) {
-    .footer {
-        padding: 0.5rem 0;
+    .admin-sidebar {
+        position: fixed;
+        left: -280px;
+        transition: left 0.3s;
     }
 
-    main {
-        min-height: calc(100vh - 150px);
+        .admin-sidebar.show {
+            left: 0;
+        }
+
+    .admin-content-wrapper {
+        margin-left: 0;
     }
 }
+
+/* Search & Filter Consistency */
+.search-filter-card {
+    background: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+    .search-filter-card .card-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        border: none;
+        border-radius: 12px 12px 0 0;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+    }
+
+    .search-filter-card .card-body {
+        padding: 1.5rem;
+    }
+
+/* Pagination Info Text */
+.pagination-info {
+    text-align: center;
+    color: #6c757d;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Hover Effects */
+.hover-shadow:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+/* Badges */
+.badge {
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+}
+
+/* Alerts */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+/* Form Controls */
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s;
+}
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.book-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+.favorite-btn {
+    transition: all 0.3s;
+}
+
+    .favorite-btn:hover {
+        transform: scale(1.1);
+    }
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }

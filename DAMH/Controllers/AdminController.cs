@@ -1138,5 +1138,38 @@ namespace DAMH.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Index(string searchTerm = "", int page = 1)
+        {
+            const int pageSize = 30;
+
+            var query = _context.Books.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(b => b.Title.Contains(searchTerm) ||
+                                         (b.Author != null && b.Author.Contains(searchTerm)));
+            }
+
+            var totalBooks = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalBooks / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var books = await query
+                .OrderByDescending(b => b.LastUpdated)
+                .ThenByDescending(b => b.CreatedDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalBooks = totalBooks;
+            ViewBag.SearchTerm = searchTerm;
+
+            return View(books);
+        }
     }
 }
