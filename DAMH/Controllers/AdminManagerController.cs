@@ -25,7 +25,7 @@ namespace DAMH.Controllers
 
             var admins = await _userManager.GetUsersInRoleAsync("Admin");
             var superAdmins = await _userManager.GetUsersInRoleAsync("SuperAdmin");
-            
+
             var allManageableUsers = admins.Concat(superAdmins).OrderBy(a => a.Email).ToList();
             return View(allManageableUsers);
         }
@@ -50,21 +50,23 @@ namespace DAMH.Controllers
                 return View(model);
             }
 
+            // CHỈ TẠO ADMIN, KHÔNG BAO GIỜ TẠO SUPERADMIN
             var adminUser = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email,
                 EmailConfirmed = true,
-                IsMember = false,
+                IsMember = false, // Admin không tự động có VIP
+                SubscriptionExpiryDate = null, // Không có VIP trọn đời
                 RegistrationDate = DateTime.Now
             };
 
             var result = await _userManager.CreateAsync(adminUser, model.Password);
             if (result.Succeeded)
             {
-                string roleToAssign = model.Role == "SuperAdmin" ? "SuperAdmin" : "Admin";
-                await _userManager.AddToRoleAsync(adminUser, roleToAssign);
-                TempData["SuccessMessage"] = $"Đã tạo tài khoản {roleToAssign}: {model.Email}";
+                // LUÔN GÁN QUYỀN ADMIN, BỎ QUA model.Role
+                await _userManager.AddToRoleAsync(adminUser, "Admin");
+                TempData["SuccessMessage"] = $"Đã tạo tài khoản Admin: {model.Email}";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -82,9 +84,11 @@ namespace DAMH.Controllers
             if (admin == null) return NotFound();
 
             var isAdmin = await _userManager.IsInRoleAsync(admin, "Admin");
-            if (!isAdmin)
+            var isSuperAdmin = await _userManager.IsInRoleAsync(admin, "SuperAdmin");
+
+            if (!isAdmin && !isSuperAdmin)
             {
-                TempData["ErrorMessage"] = "Người dùng này không phải Admin.";
+                TempData["ErrorMessage"] = "Người dùng này không phải Admin hoặc SuperAdmin.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -187,7 +191,6 @@ namespace DAMH.Controllers
         [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp")]
         public string ConfirmPassword { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Vui lòng chọn quyền")]
         public string Role { get; set; } = "Admin";
     }
 
@@ -210,4 +213,3 @@ namespace DAMH.Controllers
         public string? ConfirmNewPassword { get; set; }
     }
 }
-

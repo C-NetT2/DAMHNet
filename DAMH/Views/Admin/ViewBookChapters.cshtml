@@ -1,7 +1,7 @@
 ﻿@model DAMH.Models.Book
 
 @{
-    ViewData["Title"] = "Danh sách chương";
+    ViewData["Title"] = "Quản lý chương";
     Layout = "_AdminLayout";
 }
 
@@ -12,13 +12,17 @@
 </div>
 
 <div class="card shadow-sm">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+    <div class="card-header bg-gradient d-flex justify-content-between align-items-center py-3 border-0">
         <div>
-            <h2 class="mb-0 text-primary">@Model.Title</h2>
-            <span class="text-muted">Quản lý các chương</span>
+            <h2 class="mb-1 text-white">
+                <i class="bi bi-book-half text-white"></i> @Model.Title
+            </h2>
+            <span class="text-white opacity-75">
+                <i class="bi bi-list-ol"></i> Quản lý các chương của sách
+            </span>
         </div>
         <div>
-            <a asp-action="AddChapter" asp-route-bookId="@Model.BookId" class="btn btn-success">
+            <a asp-action="AddChapter" asp-route-bookId="@Model.BookId" class="btn btn-success shadow-sm">
                 <i class="bi bi-plus-lg"></i> Thêm chương mới
             </a>
         </div>
@@ -26,78 +30,137 @@
     <div class="card-body p-0">
         @if (Model.Chapters != null && Model.Chapters.Any())
         {
-            <table class="table table-striped mb-0 align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 10%">STT</th>
-                        <th style="width: 40%">Tên chương</th>
-                        <th style="width: 15%">Trạng thái</th>
-                        <th style="width: 35%" class="text-end">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var chapter in Model.Chapters.OrderBy(c => c.ChapterOrder))
-                    {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <td class="fw-bold">#@chapter.ChapterOrder</td>
-                            <td>@chapter.Title</td>
-                            <td>
-                                @if (chapter.IsFree)
-                                {
-                                    <span class="badge bg-success">Miễn phí</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Khóa (Theo sách)</span>
-                                }
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group" role="group">
-                                    <a asp-controller="Reading"
-                                       asp-action="ViewChapter"
-                                       asp-route-chapterId="@chapter.ChapterId"
-                                       asp-route-isAdminView="true"
-                                       target="_self"
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="Xem trước">
-                                        <i class="bi bi-eye"></i> Xem
-                                    </a>
-
-                                    <a asp-action="EditChapter"
-                                       asp-route-id="@chapter.ChapterId"
-                                       class="btn btn-sm btn-warning"
-                                       title="Chỉnh sửa chương">
-                                        <i class="bi bi-pencil-square"></i> Sửa
-                                    </a>
-
-                                    <form asp-action="DeleteChapter"
-                                          asp-route-id="@chapter.ChapterId"
-                                          method="post"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa chương này không?');">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit"
-                                                class="btn btn-sm btn-danger"
-                                                title="Xóa chương">
-                                            <i class="bi bi-trash"></i> Xóa
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
+                            <th style="width: 10%" class="text-center">
+                                <i class="bi bi-hash"></i> STT
+                            </th>
+                            <th style="width: 45%">
+                                <i class="bi bi-journal-text"></i> Tên chương
+                            </th>
+                            <th style="width: 15%" class="text-center">
+                                <i class="bi bi-shield-check"></i> Trạng thái
+                            </th>
+                            <th style="width: 30%" class="text-end pe-3">
+                                <i class="bi bi-gear"></i> Hành động
+                            </th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var chapter in Model.Chapters.OrderBy(c => c.ChapterOrder))
+                        {
+                            <tr>
+                                <td class="fw-bold text-center text-primary">
+                                    <span class="badge bg-light text-primary border" style="font-size: 0.9rem;">
+                                        #@chapter.ChapterOrder
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-book me-2 text-muted"></i>
+                                        <span class="fw-500">@chapter.Title</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if (chapter.IsFree)
+                                    {
+                                        <span class="badge bg-success shadow-sm">
+                                            <i class="bi bi-unlock-fill"></i> Miễn phí
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary shadow-sm">
+                                            <i class="bi bi-lock-fill"></i> Theo sách
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a asp-controller="Reading"
+                                           asp-action="ViewChapter"
+                                           asp-route-chapterId="@chapter.ChapterId"
+                                           asp-route-isAdminView="true"
+                                           target="_self"
+                                           class="btn btn-sm btn-info text-white"
+                                           title="Xem trước chương">
+                                            <i class="bi bi-eye"></i> Xem
+                                        </a>
+
+                                        <a asp-action="EditChapter"
+                                           asp-route-id="@chapter.ChapterId"
+                                           class="btn btn-sm btn-warning"
+                                           title="Chỉnh sửa chương">
+                                            <i class="bi bi-pencil-square"></i> Sửa
+                                        </a>
+
+                                        <form asp-action="DeleteChapter"
+                                              asp-route-id="@chapter.ChapterId"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('⚠️ CẢNH BÁO\n\nBạn có chắc chắn muốn xóa chương này không?\n\nHành động này không thể hoàn tác!');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                    title="Xóa chương">
+                                                <i class="bi bi-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-light border-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        <i class="bi bi-info-circle"></i>
+                        Tổng cộng: <strong>@Model.Chapters.Count</strong> chương
+                    </div>
+                    <div>
+                        <a asp-action="AddChapter" asp-route-bookId="@Model.BookId" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-circle"></i> Thêm chương mới
+                        </a>
+                    </div>
+                </div>
+            </div>
         }
         else
         {
             <div class="text-center py-5 text-muted">
-                <i class="bi bi-journal-x" style="font-size: 2rem;"></i>
-                <p class="mt-2">Sách này chưa có chương nào.</p>
-                <a asp-action="AddChapter" asp-route-bookId="@Model.BookId" class="btn btn-primary mt-2">
+                <div class="mb-3">
+                    <i class="bi bi-journal-x text-secondary opacity-50" style="font-size: 4rem;"></i>
+                </div>
+                <h5 class="text-secondary">Chưa có chương nào</h5>
+                <p class="mb-4">Sách này chưa có chương nào. Hãy tạo chương đầu tiên!</p>
+                <a asp-action="AddChapter" asp-route-bookId="@Model.BookId" class="btn btn-success btn-lg px-5 shadow">
                     <i class="bi bi-plus-circle"></i> Thêm chương đầu tiên
                 </a>
             </div>
         }
     </div>
 </div>
+
+<style>
+    .fw-500 {
+        font-weight: 500;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table tbody tr:hover {
+            background-color: rgba(102, 178, 255, 0.05);
+            transform: translateX(2px);
+        }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #66B2FF 0%, #4a9eff 100%) !important;
+    }
+</style>

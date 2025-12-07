@@ -7,51 +7,184 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-success">
-            <i class="bi bi-person-plus"></i> Tạo Admin Mới
+            <i class="bi bi-person-plus"></i> Tạo Tài Khoản Admin Mới
         </h2>
         <a asp-action="Index" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Quay lại
         </a>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <form asp-action="CreateAdmin" method="post">
-                @Html.AntiForgeryToken()
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label fw-bold"></label>
-                    <input asp-for="Email" class="form-control" placeholder="admin@domain.com">
-                    <span asp-validation-for="Email" class="text-danger"></span>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-lock"></i> Thông tin tài khoản Admin
+                    </h5>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="Password" class="form-label fw-bold"></label>
-                    <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu">
-                    <span asp-validation-for="Password" class="text-danger"></span>
+                <div class="card-body p-4">
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Lưu ý:</strong> SuperAdmin chỉ có thể tạo tài khoản <strong>Admin thông thường</strong>.
+                        Tài khoản SuperAdmin chỉ được tạo thông qua cấu hình hệ thống.
+                    </div>
+
+                    <form asp-action="CreateAdmin" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label fw-bold">
+                                <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Email" class="form-control form-control-lg"
+                                   placeholder="admin@domain.com" autofocus>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                            <small class="text-muted d-block mt-1">
+                                Email sẽ được sử dụng làm tên đăng nhập
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label fw-bold">
+                                <i class="bi bi-key"></i> Mật khẩu <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Password" class="form-control form-control-lg"
+                                   placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)">
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-shield-check"></i> Mật khẩu phải có ít nhất 6 ký tự
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfirmPassword" class="form-label fw-bold">
+                                <i class="bi bi-key-fill"></i> Xác nhận mật khẩu <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ConfirmPassword" class="form-control form-control-lg"
+                                   placeholder="Nhập lại mật khẩu">
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-shield-lock-fill"></i> Quyền hạn
+                            </label>
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check form-check-inline me-0 flex-grow-1">
+                                            <input class="form-check-input" type="radio"
+                                                   name="Role" id="roleAdmin" value="Admin"
+                                                   checked disabled>
+                                            <label class="form-check-label fw-bold text-warning" for="roleAdmin">
+                                                <i class="bi bi-shield-fill"></i> Admin
+                                            </label>
+                                            <input type="hidden" name="Role" value="Admin" />
+                                        </div>
+                                        <span class="badge bg-warning text-dark">Mặc định</span>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="bi bi-info-circle"></i>
+                                        Admin có quyền quản lý sách, người dùng, đánh giá và thống kê cơ bản
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>Quan trọng:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Tài khoản Admin sẽ có quyền truy cập vào tất cả chức năng quản trị</li>
+                                <li>Hãy đảm bảo chỉ cấp quyền cho người đáng tin cậy</li>
+                                <li>Admin có thể chỉnh sửa, xóa dữ liệu quan trọng của hệ thống</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-secondary btn-lg px-4">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                <i class="bi bi-check-circle"></i> Tạo Tài Khoản Admin
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="ConfirmPassword" class="form-label fw-bold"></label>
-                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu">
-                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="bi bi-info-circle-fill text-primary"></i>
+                        Quyền hạn của Admin
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    Quản lý sách và chương
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    Quản lý người dùng
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    Quản lý đánh giá
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    Xem thống kê cơ bản
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    Quản lý yêu thích
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                    Không thể tạo/xóa Admin khác
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="Role" class="form-label fw-bold">Quyền</label>
-                    <select asp-for="Role" class="form-select">
-                        <option value="Admin">Admin</option>
-                        <option value="SuperAdmin">SuperAdmin</option>
-                    </select>
-                    <span asp-validation-for="Role" class="text-danger"></span>
-                </div>
-                <div class="text-end">
-                    <button type="submit" class="btn btn-success px-4">
-                        <i class="bi bi-check-circle"></i> Tạo tài khoản
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+    <script>
+        document.getElementById('Password').addEventListener('input', function(e) {
+            const password = e.target.value;
+            const strength = document.querySelector('.password-strength');
 
+            if (password.length < 6) {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+        document.getElementById('ConfirmPassword').addEventListener('input', function(e) {
+            const password = document.getElementById('Password').value;
+            const confirmPassword = e.target.value;
+
+            if (password !== confirmPassword) {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    </script>
+}
