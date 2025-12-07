@@ -12,18 +12,80 @@
 
         @if (User.IsInRole("SuperAdmin"))
         {
-            <li class="nav-item">
-                <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="SuperAdminAnalytics">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-danger fw-bold" href="#" id="superAdminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-shield-check"></i> Xin chào SuperAdmin
                 </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="superAdminDropdown">
+                    <li>
+                        <a class="dropdown-item text-danger fw-bold" asp-controller="Admin" asp-action="Index">
+                            <i class="bi bi-speedometer2"></i> Admin Panel
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                            <i class="bi bi-person-badge"></i> Hồ sơ
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="History">
+                            <i class="bi bi-clock-history"></i> Lịch sử đọc
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Favorites" asp-action="Index">
+                            <i class="bi bi-heart-fill text-danger"></i> Mục yêu thích
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
             </li>
         }
         else if (User.IsInRole("Admin"))
         {
-            <li class="nav-item">
-                <a class="nav-link text-warning fw-bold" asp-controller="Admin" asp-action="Index">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-circle"></i> Xin chào Admin
                 </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                    <li>
+                        <a class="dropdown-item text-warning fw-bold" asp-controller="Admin" asp-action="Index">
+                            <i class="bi bi-speedometer2"></i> Admin Panel
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                            <i class="bi bi-person-badge"></i> Hồ sơ
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="History">
+                            <i class="bi bi-clock-history"></i> Lịch sử đọc
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Favorites" asp-action="Index">
+                            <i class="bi bi-heart-fill text-danger"></i> Mục yêu thích
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
             </li>
         }
         else if (User.IsInRole("Member") || (currentUser?.IsMember == true && currentUser.SubscriptionExpiryDate > DateTime.Now))

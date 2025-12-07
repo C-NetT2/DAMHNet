@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="d-flex" style="min-height: 100vh;">
-        <div class="admin-sidebar text-white p-3" style="width: 280px;">
+    <div class="admin-layout-wrapper">
+        <div class="admin-sidebar text-white p-3">
             <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
                 <span class="fs-4 fw-bold">
                     <i class="bi bi-speedometer2"></i> Admin Panel
@@ -21,13 +21,6 @@
                 <li class="nav-item">
                     <a asp-controller="Admin" asp-action="Index"
                        class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
-                        <i class="bi bi-speedometer2 me-2"></i> Bảng điều khiển
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a asp-controller="Admin" asp-action="Index"
-                       class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Book") == true ? "active" : "")">
                         <i class="bi bi-book me-2"></i> Quản lý Sách
                     </a>
                 </li>
@@ -63,7 +56,7 @@
                 <li>
                     <a asp-controller="Admin" asp-action="ManageFavorites"
                        class="nav-link text-white @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageFavorites" ? "active" : "")">
-                        <i class="bi bi-heart me-2"></i> Quản lý Mục yêu thích
+                        <i class="bi bi-heart me-2"></i> Quản lý Yêu thích
                     </a>
                 </li>
 
@@ -72,7 +65,7 @@
                     <li class="nav-item mt-3">
                         <hr class="text-white-50">
                         <small class="text-white-50 text-uppercase fw-bold ps-3">
-                            <i class="bi bi-shield-fill-check"></i> Chỉ dành cho SuperAdmin
+                            <i class="bi bi-shield-fill-check"></i> SuperAdmin
                         </small>
                     </li>
 
@@ -124,7 +117,8 @@
                 </ul>
             </div>
         </div>
-        <div class="flex-grow-1 p-4 bg-light">
+
+        <div class="admin-content-wrapper">
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -142,6 +136,7 @@
             @RenderBody()
         </div>
     </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

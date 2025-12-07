@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="h-100">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column h-100">
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
             <div class="container-fluid">
@@ -26,11 +26,11 @@
                                 <i class="bi bi-house-door"></i> Trang chủ
                             </a>
                         </li>
-                            <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="AllBooks">
                                 <i class="bi bi-collection"></i> Kho sách
-                                </a>
-                            </li>
+                            </a>
+                        </li>
                     </ul>
                     <form asp-controller="Home" asp-action="Search" method="get" class="d-flex me-3 flex-fill" style="max-width: 500px;">
                         <div class="input-group">
@@ -48,16 +48,19 @@
             </div>
         </nav>
     </header>
-    <main role="main" class="flex-fill pb-3">
-    <div class="container">
+
+    <main role="main" class="flex-fill">
+        <div class="container">
             @RenderBody()
         </div>
-        </main>
+    </main>
+
     <footer class="footer mt-auto py-3 bg-light border-top">
         <div class="container text-center">
             <span class="text-muted">&copy; 2024 - Thư Viện Online. Tất cả quyền được bảo lưu.</span>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>

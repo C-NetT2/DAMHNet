@@ -15,22 +15,19 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-info">
-            <i class="bi bi-chat-left-quote-fill"></i> Quản Lý Đánh Giá & Bình Luận
+            <i class="bi bi-chat-left-quote-fill"></i> Quản Lý Đánh Giá
             <span class="badge bg-secondary">@totalReviews đánh giá</span>
         </h2>
     </div>
-
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-funnel-fill"></i> Bộ Lọc Nâng Cao
-            </h5>
+    <div class="search-filter-card card mb-4">
+        <div class="card-header">
+            <i class="bi bi-funnel-fill"></i> Tìm Kiếm & Lọc Đánh Giá
         </div>
         <div class="card-body">
             <form asp-action="ManageReviews" method="get">
-                <div class="row g-3">
+                <div class="row g-3 mb-3">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">
+                        <label class="form-label">
                             <i class="bi bi-search"></i> Tìm kiếm
                         </label>
                         <input type="text" name="searchTerm" class="form-control"
@@ -38,7 +35,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-bold">
+                        <label class="form-label">
                             <i class="bi bi-star-fill text-warning"></i> Đánh giá
                         </label>
                         <select name="rating" class="form-select">
@@ -52,7 +49,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-bold">
+                        <label class="form-label">
                             <i class="bi bi-calendar-range"></i> Từ ngày
                         </label>
                         <input type="date" name="startDate" class="form-control"
@@ -60,13 +57,13 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-bold">Đến ngày</label>
+                        <label class="form-label">Đến ngày</label>
                         <input type="date" name="endDate" class="form-control"
                                value="@(endDate?.ToString("yyyy-MM-dd"))">
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-bold">
+                        <label class="form-label">
                             <i class="bi bi-sort-down"></i> Sắp xếp
                         </label>
                         <select name="sortBy" class="form-select">
@@ -74,53 +71,23 @@
                             <option value="oldest" selected="@(sortBy == "oldest")">Cũ nhất</option>
                             <option value="rating_high" selected="@(sortBy == "rating_high")">Đánh giá cao</option>
                             <option value="rating_low" selected="@(sortBy == "rating_low")">Đánh giá thấp</option>
-                            <option value="name_az" selected="@(sortBy == "name_az")">Tên A-Z</option>
-                            <option value="name_za" selected="@(sortBy == "name_za")">Tên Z-A</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <button type="submit" class="btn btn-info text-white w-100">
+                <div class="row">
+                    <div class="col-md-6 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
                             <i class="bi bi-search"></i> Áp dụng bộ lọc
                         </button>
-                    </div>
-                    <div class="col-md-6">
-                        <a asp-action="ManageReviews" class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                        <a asp-action="ManageReviews" class="btn btn-outline-secondary flex-fill">
+                            <i class="bi bi-arrow-counterclockwise"></i> Xóa
                         </a>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    @if (!string.IsNullOrEmpty(searchTerm) || rating.HasValue || startDate.HasValue || endDate.HasValue)
-    {
-        <div class="alert alert-info d-flex align-items-center justify-content-between mb-4">
-            <div>
-                <i class="bi bi-info-circle-fill"></i>
-                <strong>Bộ lọc đang áp dụng:</strong>
-                @if (!string.IsNullOrEmpty(searchTerm))
-                {
-                    <span class="badge bg-primary ms-2">Từ khóa: @searchTerm</span>
-                }
-                @if (rating.HasValue)
-                {
-                    <span class="badge bg-warning text-dark ms-2">@rating sao</span>
-                }
-                @if (startDate.HasValue || endDate.HasValue)
-                {
-                    <span class="badge bg-success ms-2">
-                        @(startDate?.ToString("dd/MM/yyyy") ?? "...") - @(endDate?.ToString("dd/MM/yyyy") ?? "...")
-                    </span>
-                }
-            </div>
-            <a asp-action="ManageReviews" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-x"></i> Xóa
-            </a>
-        </div>
-    }
 
     @if (Model.Any())
     {
@@ -183,8 +150,8 @@
                                             <br>@review.CreatedDate.ToString("HH:mm")
                                         </small>
                                     </td>
-                                    <td class="text-end">
-                                        <div class="btn-group" role="group">
+                                    <td>
+                                        <div class="d-flex justify-content-end gap-1 action-buttons">
                                             <a asp-action="EditReview" asp-route-id="@review.ReviewId"
                                                class="btn btn-sm btn-warning" title="Sửa">
                                                 <i class="bi bi-pencil-square"></i>
@@ -281,7 +248,7 @@
                 </ul>
             </nav>
 
-            <div class="text-center text-muted mb-4">
+            <div class="pagination-info">
                 Trang @currentPage / @totalPages (Tổng @totalReviews đánh giá)
             </div>
         }
