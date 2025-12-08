@@ -50,21 +50,19 @@ namespace DAMH.Controllers
                 return View(model);
             }
 
-            // CHỈ TẠO ADMIN, KHÔNG BAO GIỜ TẠO SUPERADMIN
             var adminUser = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email,
                 EmailConfirmed = true,
-                IsMember = false, // Admin không tự động có VIP
-                SubscriptionExpiryDate = null, // Không có VIP trọn đời
+                IsMember = false, 
+                SubscriptionExpiryDate = null, 
                 RegistrationDate = DateTime.Now
             };
 
             var result = await _userManager.CreateAsync(adminUser, model.Password);
             if (result.Succeeded)
             {
-                // LUÔN GÁN QUYỀN ADMIN, BỎ QUA model.Role
                 await _userManager.AddToRoleAsync(adminUser, "Admin");
                 TempData["SuccessMessage"] = $"Đã tạo tài khoản Admin: {model.Email}";
                 return RedirectToAction(nameof(Index));

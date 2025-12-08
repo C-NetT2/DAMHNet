@@ -63,7 +63,7 @@ namespace DAMH.Controllers
                         .ToListAsync();
                     break;
 
-                default: // rating
+                default: 
                     topRatedBooks = await _context.Books
                         .Include(b => b.Reviews)
                         .Where(b => b.Reviews.Any())
