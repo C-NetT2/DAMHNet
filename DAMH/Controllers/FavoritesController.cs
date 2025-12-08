@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace DAMH.Controllers
 {
-    [Authorize] 
+    [Authorize]
     public class FavoritesController : Controller
     {
         private readonly LibraryContext _context;
@@ -21,22 +21,25 @@ namespace DAMH.Controllers
         {
             const int pageSize = 30;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             var query = _context.Favorites
                 .Where(f => f.UserId == userId)
                 .Include(f => f.Book)
                 .OrderByDescending(f => f.DateAdded);
 
             var totalCount = await query.CountAsync();
-            var totalPages = (totalCount + pageSize - 1) / pageSize;
+
+            var totalPages = totalCount > 0 ? (totalCount + pageSize - 1) / pageSize : 0;
 
             if (page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
 
-            var favorites = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            var favorites = totalCount > 0
+                ? await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync()
+                : new List<Favorite>();
 
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
