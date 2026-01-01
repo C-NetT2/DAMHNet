@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using DAMH.Models;
+﻿using DAMH.Models;
 using DAMH.Models.ViewModels;
+using DAMH.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DAMH.Controllers
 {
@@ -11,21 +12,23 @@ namespace DAMH.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserService _userService;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IUserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userService = userService;
         }
 
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            var model = new LoginViewModel
-            {
-                ReturnUrl = returnUrl
-            };
+            var model = new LoginViewModel { ReturnUrl = returnUrl };
             ViewData["ReturnUrl"] = returnUrl;
             return View(model);
         }
@@ -38,9 +41,7 @@ namespace DAMH.Controllers
             ViewData["ReturnUrl"] = returnUrl;
 
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
@@ -58,9 +59,7 @@ namespace DAMH.Controllers
             if (result.Succeeded)
             {
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                {
                     return Redirect(returnUrl);
-                }
 
                 return RedirectToAction("Index", "Home");
             }
@@ -82,9 +81,7 @@ namespace DAMH.Controllers
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             var user = new ApplicationUser
             {
@@ -100,14 +97,10 @@ namespace DAMH.Controllers
             if (result.Succeeded)
             {
                 if (model.IsMember)
-                {
                     await _userManager.AddToRoleAsync(user, "Member");
-                }
                 else
-                {
                     await _userManager.AddToRoleAsync(user, "User");
-                }
-                
+
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 TempData["SuccessMessage"] = "Đăng ký thành công!";
                 return RedirectToAction("Index", "Home");
@@ -143,7 +136,7 @@ namespace DAMH.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return RedirectToAction("Login");
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null) return NotFound();
 
             var model = new ProfileViewModel
@@ -168,25 +161,22 @@ namespace DAMH.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return RedirectToAction("Login");
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null) return NotFound();
 
             user.FullName = model.FullName;
             user.PhoneNumber = model.PhoneNumber;
             user.Address = model.Address;
 
-            var result = await _userManager.UpdateAsync(user);
+            var result = await _userService.UpdateUserAsync(user);
 
-            if (result.Succeeded)
+            if (result)
             {
                 TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công!";
                 return RedirectToAction("Profile");
             }
 
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
+            ModelState.AddModelError(string.Empty, "Có lỗi xảy ra");
 
             model.Email = user.Email ?? "";
             model.IsMember = user.IsMember;

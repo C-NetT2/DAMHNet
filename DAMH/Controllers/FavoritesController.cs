@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-using DAMH.Data;
+﻿using DAMH.Data;
 using DAMH.Models;
+using DAMH.Models.ViewModels;
+using DAMH.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace DAMH.Controllers
@@ -10,36 +12,25 @@ namespace DAMH.Controllers
     [Authorize]
     public class FavoritesController : Controller
     {
-        private readonly LibraryContext _context;
+        private readonly IFavoriteService _favoriteService;
 
-        public FavoritesController(LibraryContext context)
+        public FavoritesController(IFavoriteService favoriteService)
         {
-            _context = context;
+            _favoriteService = favoriteService;
         }
 
         public async Task<IActionResult> Index(int page = 1)
         {
             const int pageSize = 30;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return RedirectToAction("Login", "Account");
 
-            var query = _context.Favorites
-                .Where(f => f.UserId == userId)
-                .Include(f => f.Book)
-                .OrderByDescending(f => f.DateAdded);
-
-            var totalCount = await query.CountAsync();
+            var (favorites, totalCount) = await _favoriteService.GetPagedFavoritesAsync(page, pageSize, userId);
 
             var totalPages = totalCount > 0 ? (totalCount + pageSize - 1) / pageSize : 0;
 
             if (page < 1) page = 1;
             if (totalPages > 0 && page > totalPages) page = totalPages;
-
-            var favorites = totalCount > 0
-                ? await query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync()
-                : new List<Favorite>();
 
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
@@ -52,31 +43,16 @@ namespace DAMH.Controllers
         public async Task<IActionResult> Toggle(int bookId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Json(new { success = false, message = "Vui lòng đăng nhập!" });
+            if (userId == null)
+                return Json(new { success = false, message = "Vui lòng đăng nhập!" });
 
-            var existingFav = await _context.Favorites
-                .FirstOrDefaultAsync(f => f.UserId == userId && f.BookId == bookId);
+            var (success, message, isFavorited) = await _favoriteService.ToggleFavoriteAsync(userId, bookId);
 
-            bool isFavorited;
-
-            if (existingFav != null)
-            {
-                _context.Favorites.Remove(existingFav);
-                isFavorited = false;
-            }
-            else
-            {
-                var newFav = new Favorite { UserId = userId, BookId = bookId };
-                _context.Favorites.Add(newFav);
-                isFavorited = true;
-            }
-
-            await _context.SaveChangesAsync();
             return Json(new
             {
-                success = true,
+                success = success,
                 isFavorited = isFavorited,
-                message = isFavorited ? "Đã thêm vào yêu thích!" : "Đã xóa khỏi yêu thích!"
+                message = message
             });
         }
 
@@ -84,11 +60,10 @@ namespace DAMH.Controllers
         public async Task<IActionResult> CheckStatus(int bookId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Json(new { isFavorited = false });
+            if (userId == null)
+                return Json(new { isFavorited = false });
 
-            var isFavorited = await _context.Favorites
-                .AnyAsync(f => f.UserId == userId && f.BookId == bookId);
-
+            var isFavorited = await _favoriteService.IsFavoritedAsync(userId, bookId);
             return Json(new { isFavorited = isFavorited });
         }
 
@@ -96,13 +71,9 @@ namespace DAMH.Controllers
         public async Task<IActionResult> Remove(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var fav = await _context.Favorites.FirstOrDefaultAsync(f => f.FavoriteId == id && f.UserId == userId);
+            if (userId == null) return RedirectToAction("Login", "Account");
 
-            if (fav != null)
-            {
-                _context.Favorites.Remove(fav);
-                await _context.SaveChangesAsync();
-            }
+            await _favoriteService.RemoveFavoriteAsync(id, userId);
             return RedirectToAction(nameof(Index));
         }
 
@@ -111,13 +82,12 @@ namespace DAMH.Controllers
         public async Task<IActionResult> GetCount()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Json(new { count = 0 });
+            if (userId == null)
+                return Json(new { count = 0 });
 
-            var count = await _context.Favorites
-                .Where(f => f.UserId == userId)
-                .CountAsync();
-
+            var count = await _favoriteService.GetUserFavoriteCountAsync(userId);
             return Json(new { count });
         }
     }
+
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAMH.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20251214141654_InitialRebuild")]
-    partial class InitialRebuild
+    [Migration("20260101055226_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

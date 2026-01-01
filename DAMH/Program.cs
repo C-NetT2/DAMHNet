@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using DAMH.Data;
 using DAMH.Models;
+using DAMH.Services.Interfaces;
+using DAMH.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,17 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
 });
+
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IChapterService, ChapterService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IFavoriteService, FavoriteService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
+builder.Services.AddScoped<IReadingHistoryService, ReadingHistoryService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 var app = builder.Build();
 
