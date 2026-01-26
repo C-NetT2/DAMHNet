@@ -18,9 +18,9 @@ namespace DAMH.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AdminController(
-            LibraryContext context,
-            IActivityLogService activityLogService,
-            IHttpContextAccessor httpContextAccessor)
+        LibraryContext context,
+        IActivityLogService activityLogService,
+        IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _activityLogService = activityLogService;
