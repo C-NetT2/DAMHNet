@@ -13,15 +13,26 @@ namespace DAMH.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IUserService _userService;
+        private readonly IActivityLogService _activityLogService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IUserService userService)
+            IUserService userService,
+            IActivityLogService activityLogService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _userService = userService;
+            _activityLogService = activityLogService;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetClientIpAddress()
+        {
+            return _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         }
 
         [AllowAnonymous]
@@ -58,6 +69,16 @@ namespace DAMH.Controllers
 
             if (result.Succeeded)
             {
+                await _activityLogService.LogActivityAsync(
+                    userId: user.Id,
+                    action: "Login",
+                    section: "Authentication",
+                    entityId: user.Id,
+                    entityName: user.Email,
+                    notes: $"Đăng nhập thành công: {user.Email}",
+                    ipAddress: GetClientIpAddress()
+                );
+
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
 
@@ -102,6 +123,23 @@ namespace DAMH.Controllers
                     await _userManager.AddToRoleAsync(user, "User");
 
                 await _signInManager.SignInAsync(user, isPersistent: false);
+
+                await _activityLogService.LogActivityAsync(
+                    userId: user.Id,
+                    action: "Register",
+                    section: "User",
+                    entityId: user.Id,
+                    entityName: user.Email,
+                    newValues: new
+                    {
+                        Email = user.Email,
+                        IsMember = user.IsMember,
+                        RegistrationDate = user.RegistrationDate
+                    },
+                    notes: $"Đăng ký tài khoản mới: {user.Email}" + (model.IsMember ? " (VIP trial)" : ""),
+                    ipAddress: GetClientIpAddress()
+                );
+
                 TempData["SuccessMessage"] = "Đăng ký thành công!";
                 return RedirectToAction("Index", "Home");
             }
@@ -118,7 +156,24 @@ namespace DAMH.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userEmail = User.Identity?.Name;
+
             await _signInManager.SignOutAsync();
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await _activityLogService.LogActivityAsync(
+                    userId: userId,
+                    action: "Logout",
+                    section: "Authentication",
+                    entityId: userId,
+                    entityName: userEmail,
+                    notes: $"Đăng xuất: {userEmail}",
+                    ipAddress: GetClientIpAddress()
+                );
+            }
+
             TempData["SuccessMessage"] = "Đã đăng xuất.";
             return RedirectToAction("Index", "Home");
         }
@@ -164,14 +219,41 @@ namespace DAMH.Controllers
             var user = await _userService.GetUserByIdAsync(userId);
             if (user == null) return NotFound();
 
+            var oldFullName = user.FullName;
+            var oldPhoneNumber = user.PhoneNumber;
+            var oldAddress = user.Address;
+
             user.FullName = model.FullName;
             user.PhoneNumber = model.PhoneNumber;
             user.Address = model.Address;
+
 
             var result = await _userService.UpdateUserAsync(user);
 
             if (result)
             {
+                await _activityLogService.LogActivityAsync(
+                    userId: userId,
+                    action: "Update",
+                    section: "Profile",
+                    entityId: userId,
+                    entityName: user.Email,
+                    oldValues: new
+                    {
+                        FullName = oldFullName,
+                        PhoneNumber = oldPhoneNumber,
+                        Address = oldAddress
+                    },
+                    newValues: new
+                    {
+                        FullName = model.FullName,
+                        PhoneNumber = model.PhoneNumber,
+                        Address = model.Address
+                    },
+                    notes: $"Cập nhật thông tin cá nhân: {user.Email}",
+                    ipAddress: GetClientIpAddress()
+                );
+
                 TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công!";
                 return RedirectToAction("Profile");
             }
@@ -211,6 +293,17 @@ namespace DAMH.Controllers
             if (result.Succeeded)
             {
                 await _signInManager.RefreshSignInAsync(user);
+
+                await _activityLogService.LogActivityAsync(
+                    userId: userId!,
+                    action: "Update",
+                    section: "Security",
+                    entityId: userId,
+                    entityName: user.Email,
+                    notes: $"Đổi mật khẩu thành công: {user.Email}",
+                    ipAddress: GetClientIpAddress()
+                );
+
                 TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
                 return RedirectToAction("Profile");
             }
