@@ -13,21 +13,21 @@ namespace DAMH.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IActivityLogService _activityLogService; 
+        private readonly IActivityLogService _activityLogService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
         public AdminManagerController(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IActivityLogService activityLogService, 
-            IHttpContextAccessor httpContextAccessor) 
+            IActivityLogService activityLogService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _activityLogService = activityLogService; 
-            _httpContextAccessor = httpContextAccessor; 
+            _activityLogService = activityLogService;
+            _httpContextAccessor = httpContextAccessor;
         }
-       
-        
+
         private string GetUserId()
         {
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
@@ -37,6 +37,7 @@ namespace DAMH.Controllers
         {
             return _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         }
+
         public async Task<IActionResult> Index()
         {
             var adminRole = await _roleManager.FindByNameAsync("Admin");
@@ -74,8 +75,8 @@ namespace DAMH.Controllers
                 UserName = model.Email,
                 Email = model.Email,
                 EmailConfirmed = true,
-                IsMember = false, 
-                SubscriptionExpiryDate = null, 
+                IsMember = false,
+                SubscriptionExpiryDate = null,
                 RegistrationDate = DateTime.Now
             };
 
@@ -83,21 +84,24 @@ namespace DAMH.Controllers
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(adminUser, "Admin");
+
+                // FIXED: Use "SuperAdmin" section to distinguish from regular Admin actions
                 await _activityLogService.LogActivityAsync(
-                userId: GetUserId(),
-                action: "Create",
-                section: "Admin",
-                entityId: adminUser.Id,
-                entityName: adminUser.Email,
-                newValues: new
-                {
-                    Email = adminUser.Email,
-                    Role = "Admin",
-                    CreatedDate = adminUser.RegistrationDate
-                },
-                notes: $"SuperAdmin tạo tài khoản Admin mới: {adminUser.Email}",
-                ipAddress: GetClientIpAddress()
+                    userId: GetUserId(),
+                    action: "Create",
+                    section: "SuperAdmin",  // Changed from "Admin" to "SuperAdmin"
+                    entityId: adminUser.Id,
+                    entityName: adminUser.Email,
+                    newValues: new
+                    {
+                        Email = adminUser.Email,
+                        Role = "Admin",
+                        CreatedDate = adminUser.RegistrationDate
+                    },
+                    notes: $"SuperAdmin tạo tài khoản Admin mới: {adminUser.Email}",
+                    ipAddress: GetClientIpAddress()
                 );
+
                 TempData["SuccessMessage"] = $"Đã tạo tài khoản Admin: {model.Email}";
                 return RedirectToAction(nameof(Index));
             }
@@ -167,26 +171,28 @@ namespace DAMH.Controllers
             var updateResult = await _userManager.UpdateAsync(admin);
             if (updateResult.Succeeded)
             {
+                // FIXED: Use "SuperAdmin" section
                 await _activityLogService.LogActivityAsync(
-            userId: GetUserId(),
-            action: "Update",
-            section: "Admin",
-            entityId: admin.Id,
-            entityName: admin.Email,
-            oldValues: new
-            {
-                FullName = oldFullName,
-                PasswordChanged = false
-            },
-            newValues: new
-            {
-                FullName = model.FullName,
-                PasswordChanged = passwordChanged
-            },
-            notes: $"SuperAdmin cập nhật thông tin Admin: {admin.Email}" +
-                   (passwordChanged ? " (Đã đổi mật khẩu)" : ""),
-            ipAddress: GetClientIpAddress()
-        );
+                    userId: GetUserId(),
+                    action: "Update",
+                    section: "SuperAdmin",  // Changed from "Admin" to "SuperAdmin"
+                    entityId: admin.Id,
+                    entityName: admin.Email,
+                    oldValues: new
+                    {
+                        FullName = oldFullName,
+                        PasswordChanged = false
+                    },
+                    newValues: new
+                    {
+                        FullName = model.FullName,
+                        PasswordChanged = passwordChanged
+                    },
+                    notes: $"SuperAdmin cập nhật thông tin Admin: {admin.Email}" +
+                           (passwordChanged ? " (Đã đổi mật khẩu)" : ""),
+                    ipAddress: GetClientIpAddress()
+                );
+
                 TempData["SuccessMessage"] = "Cập nhật thành công!";
                 return RedirectToAction(nameof(Index));
             }
@@ -217,17 +223,18 @@ namespace DAMH.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var adminEmail = admin.Email; 
+            var adminEmail = admin.Email;
             var adminFullName = admin.FullName;
             var roles = await _userManager.GetRolesAsync(admin);
 
             var result = await _userManager.DeleteAsync(admin);
             if (result.Succeeded)
             {
+                // FIXED: Use "SuperAdmin" section
                 await _activityLogService.LogActivityAsync(
                     userId: GetUserId(),
                     action: "Delete",
-                    section: "Admin",
+                    section: "SuperAdmin",  // Changed from "Admin" to "SuperAdmin"
                     entityId: id,
                     entityName: adminEmail,
                     oldValues: new
