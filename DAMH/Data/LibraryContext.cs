@@ -18,7 +18,7 @@ namespace DAMH.Data
         public DbSet<BookMedia> BookMedias { get; set; }
         public DbSet<ReadingHistory> ReadingHistories { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
-
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

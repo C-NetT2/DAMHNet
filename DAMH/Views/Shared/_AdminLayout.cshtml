@@ -76,6 +76,10 @@
                            class="nav-link superadmin-manage @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminManager" ? "active" : "")">
                             <i class="bi bi-shield-lock me-2"></i> Quản lý Admin
                         </a>
+                        <a asp-controller="ActivityLog" asp-action="Index"
+                           class="nav-link superadmin-log mb-2 @(ViewContext.RouteData.Values["Controller"]?.ToString() == "ActivityLog" ? "active" : "")">
+                            <i class="bi bi-journal-text me-2"></i> Nhật ký hoạt động
+                        </a>
                     </li>
                 }
             </ul>
