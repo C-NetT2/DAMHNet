@@ -1,8 +1,10 @@
+using DAMH.Models;
+using DAMH.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using DAMH.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace DAMH.Controllers
 {
@@ -11,13 +13,30 @@ namespace DAMH.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-
-        public AdminManagerController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly IActivityLogService _activityLogService; 
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public AdminManagerController(
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IActivityLogService activityLogService, 
+            IHttpContextAccessor httpContextAccessor) 
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _activityLogService = activityLogService; 
+            _httpContextAccessor = httpContextAccessor; 
+        }
+       
+        
+        private string GetUserId()
+        {
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
         }
 
+        private string GetClientIpAddress()
+        {
+            return _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        }
         public async Task<IActionResult> Index()
         {
             var adminRole = await _roleManager.FindByNameAsync("Admin");
@@ -64,6 +83,21 @@ namespace DAMH.Controllers
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(adminUser, "Admin");
+                await _activityLogService.LogActivityAsync(
+                userId: GetUserId(),
+                action: "Create",
+                section: "Admin",
+                entityId: adminUser.Id,
+                entityName: adminUser.Email,
+                newValues: new
+                {
+                    Email = adminUser.Email,
+                    Role = "Admin",
+                    CreatedDate = adminUser.RegistrationDate
+                },
+                notes: $"SuperAdmin tạo tài khoản Admin mới: {adminUser.Email}",
+                ipAddress: GetClientIpAddress()
+                );
                 TempData["SuccessMessage"] = $"Đã tạo tài khoản Admin: {model.Email}";
                 return RedirectToAction(nameof(Index));
             }
@@ -110,9 +144,12 @@ namespace DAMH.Controllers
             var admin = await _userManager.FindByIdAsync(model.Id);
             if (admin == null) return NotFound();
 
-            admin.FullName = model.FullName;
+            var oldFullName = admin.FullName;
 
-            if (!string.IsNullOrEmpty(model.NewPassword))
+            admin.FullName = model.FullName;
+            bool passwordChanged = !string.IsNullOrEmpty(model.NewPassword);
+
+            if (passwordChanged)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(admin);
                 var result = await _userManager.ResetPasswordAsync(admin, token, model.NewPassword);
@@ -130,6 +167,26 @@ namespace DAMH.Controllers
             var updateResult = await _userManager.UpdateAsync(admin);
             if (updateResult.Succeeded)
             {
+                await _activityLogService.LogActivityAsync(
+            userId: GetUserId(),
+            action: "Update",
+            section: "Admin",
+            entityId: admin.Id,
+            entityName: admin.Email,
+            oldValues: new
+            {
+                FullName = oldFullName,
+                PasswordChanged = false
+            },
+            newValues: new
+            {
+                FullName = model.FullName,
+                PasswordChanged = passwordChanged
+            },
+            notes: $"SuperAdmin cập nhật thông tin Admin: {admin.Email}" +
+                   (passwordChanged ? " (Đã đổi mật khẩu)" : ""),
+            ipAddress: GetClientIpAddress()
+        );
                 TempData["SuccessMessage"] = "Cập nhật thành công!";
                 return RedirectToAction(nameof(Index));
             }
@@ -160,10 +217,31 @@ namespace DAMH.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            var adminEmail = admin.Email; 
+            var adminFullName = admin.FullName;
+            var roles = await _userManager.GetRolesAsync(admin);
+
             var result = await _userManager.DeleteAsync(admin);
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = $"Đã xóa Admin: {admin.Email}";
+                await _activityLogService.LogActivityAsync(
+                    userId: GetUserId(),
+                    action: "Delete",
+                    section: "Admin",
+                    entityId: id,
+                    entityName: adminEmail,
+                    oldValues: new
+                    {
+                        Email = adminEmail,
+                        FullName = adminFullName,
+                        Roles = string.Join(", ", roles),
+                        DeletedDate = DateTime.Now
+                    },
+                    notes: $"SuperAdmin xóa tài khoản Admin: {adminEmail}",
+                    ipAddress: GetClientIpAddress()
+                );
+
+                TempData["SuccessMessage"] = $"Đã xóa Admin: {adminEmail}";
             }
             else
             {
