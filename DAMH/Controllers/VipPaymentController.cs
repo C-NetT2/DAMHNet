@@ -1,6 +1,7 @@
 ﻿using DAMH.Data;
 using DAMH.Helpers;
 using DAMH.Models;
+using DAMH.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,29 @@ namespace DAMH.Controllers
     {
         private readonly LibraryContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IActivityLogService _activityLogService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public VipPaymentController(LibraryContext context, UserManager<ApplicationUser> userManager)
+        public VipPaymentController(
+            LibraryContext context,
+            UserManager<ApplicationUser> userManager,
+            IActivityLogService activityLogService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _userManager = userManager;
+            _activityLogService = activityLogService;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetUserId()
+        {
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
+        }
+
+        private string GetClientIpAddress()
+        {
+            return _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         }
 
         [HttpGet]
@@ -25,7 +44,7 @@ namespace DAMH.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return RedirectToAction("Login", "Account");
-            
+
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
@@ -45,6 +64,9 @@ namespace DAMH.Controllers
 
             try
             {
+                var oldIsMember = user.IsMember;
+                var oldExpiryDate = user.SubscriptionExpiryDate;
+
                 var newExpiryDate = VipPackageHelper.CalculateExpiryDate(user.SubscriptionExpiryDate, packageType);
                 var amount = VipPackageHelper.GetPrice(packageType);
 
@@ -69,20 +91,54 @@ namespace DAMH.Controllers
                     user.PhoneNumber = phoneNumber;
 
                 await _userManager.UpdateAsync(user);
-                
+
                 var isMember = await _userManager.IsInRoleAsync(user, "Member");
                 if (!isMember)
                 {
                     await _userManager.AddToRoleAsync(user, "Member");
                 }
-                
+
                 await _context.SaveChangesAsync();
+
+                // Log VIP purchase activity
+                await _activityLogService.LogActivityAsync(
+                    userId: userId,
+                    action: "Purchase",
+                    section: "VIP",
+                    entityId: transaction.TransactionId.ToString(),
+                    entityName: user.Email,
+                    oldValues: new
+                    {
+                        IsMember = oldIsMember,
+                        ExpiryDate = oldExpiryDate
+                    },
+                    newValues: new
+                    {
+                        IsMember = true,
+                        ExpiryDate = newExpiryDate,
+                        PackageType = packageType.GetName(),
+                        Amount = amount
+                    },
+                    notes: $"Mua gói VIP {packageType.GetName()} - {amount:N0}₫",
+                    ipAddress: GetClientIpAddress()
+                );
 
                 TempData["SuccessMessage"] = $"Thanh toán thành công! Tài khoản VIP của bạn đã được kích hoạt đến {newExpiryDate:dd/MM/yyyy}.";
                 return RedirectToAction("PaymentSuccess", new { transactionId = transaction.TransactionId });
             }
             catch (Exception ex)
             {
+                // Log payment failure
+                await _activityLogService.LogActivityAsync(
+                    userId: userId,
+                    action: "Failed",
+                    section: "VIP",
+                    entityId: userId,
+                    entityName: user.Email,
+                    notes: $"Thanh toán thất bại: {ex.Message}",
+                    ipAddress: GetClientIpAddress()
+                );
+
                 TempData["ErrorMessage"] = "Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại!";
                 return RedirectToAction("Index");
             }

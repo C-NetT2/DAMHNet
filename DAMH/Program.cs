@@ -6,8 +6,6 @@ using DAMH.Services.Interfaces;
 using DAMH.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
 builder.Services.AddControllersWithViews();
 
@@ -34,7 +32,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
 });
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IChapterService, ChapterService>();
 builder.Services.AddScoped<IUserService, UserService>();

@@ -17,11 +17,10 @@ namespace DAMH.Controllers
         private readonly IActivityLogService _activityLogService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-
         public AdminController(
-        LibraryContext context,
-        IActivityLogService activityLogService,
-        IHttpContextAccessor httpContextAccessor)
+            LibraryContext context,
+            IActivityLogService activityLogService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _activityLogService = activityLogService;
@@ -93,10 +92,10 @@ namespace DAMH.Controllers
                     {
                         book.Title,
                         book.Author,
-                        book.Genre,
-                        book.BookType,
-                        book.AccessLevel,
-                        book.AgeRating
+                        Genre = book.Genre.GetName(),
+                        BookType = book.BookType.GetName(),
+                        AccessLevel = book.AccessLevel.GetName(),
+                        AgeRating = book.AgeRating.GetName()
                     },
                     notes: $"Tạo sách mới: {book.Title}",
                     ipAddress: GetClientIpAddress()
@@ -240,6 +239,7 @@ namespace DAMH.Controllers
                 await _context.SaveChangesAsync();
 
                 var book = await _context.Books.FindAsync(chapter.BookId);
+
                 await _activityLogService.LogActivityAsync(
                     userId: GetUserId(),
                     action: "Create",
@@ -295,6 +295,7 @@ namespace DAMH.Controllers
                     await _context.SaveChangesAsync();
 
                     var book = await _context.Books.FindAsync(chapter.BookId);
+
                     await _activityLogService.LogActivityAsync(
                         userId: GetUserId(),
                         action: "Update",
@@ -719,7 +720,8 @@ namespace DAMH.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            ViewBag.Users = await _context.Users.ToListAsync(); ViewBag.Books = await _context.Books.OrderBy(b => b.Title).ToListAsync();
+            ViewBag.Users = await _context.Users.ToListAsync();
+            ViewBag.Books = await _context.Books.OrderBy(b => b.Title).ToListAsync();
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalCount = totalCount;
