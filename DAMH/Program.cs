@@ -6,6 +6,7 @@ using DAMH.Services.Interfaces;
 using DAMH.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
 builder.Services.AddControllersWithViews();

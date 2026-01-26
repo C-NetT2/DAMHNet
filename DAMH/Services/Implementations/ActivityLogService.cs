@@ -17,8 +17,8 @@ namespace DAMH.Services.Implementations
         }
 
         public async Task LogActivityAsync(string userId, string action, string section,
-            string? entityId = null, string? entityName = null, object? oldValues = null,
-            object? newValues = null, string? notes = null, string? ipAddress = null)
+    string? entityId = null, string? entityName = null, object? oldValues = null,
+    object? newValues = null, string? notes = null, string? ipAddress = null)
         {
             try
             {
@@ -38,10 +38,12 @@ namespace DAMH.Services.Implementations
 
                 _context.ActivityLogs.Add(log);
                 await _context.SaveChangesAsync();
+
+                Console.WriteLine($"Logged activity: {action} - {section} - {entityName}"); 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error logging activity: {ex.Message}");
+                Console.WriteLine($" Error logging activity: {ex.Message}"); 
             }
         }
 
